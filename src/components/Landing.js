@@ -16,8 +16,12 @@ import CustomInput from "./CustomInput";
 import OutputDetails from "./OutputDetails";
 import ThemeDropdown from "./ThemeDropdown";
 import LanguagesDropdown from "./LanguagesDropdown";
+import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 
 import harvest_logo from "./harvest_logo_white.png"
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFileCode, faFileExcel } from '@fortawesome/free-regular-svg-icons';
 
 const javascriptDefault = `/**
 * Problem: Binary Search: Search a sorted array for a target value.
@@ -265,7 +269,30 @@ const Landing = () => {
           <ThemeDropdown handleThemeChange={handleThemeChange} theme={theme} />
         </div>
       </div>
-      <div className="flex flex-row space-x-4 items-start px-4 py-4">
+      <div className="flex flex-row space-x-4 items-start">
+        <div className="right-container flex flex-shrink-0 w-[4%] flex-col">
+          <Sidebar
+            collapsed={true}
+          >
+            <Menu
+              menuItemStyles={{
+                button: {
+                  // the active class will be added automatically by react router
+                  // so we can use it to style the active menu item
+                  [`&.active`]: {
+                    backgroundColor: '#13395e',
+                    color: '#b6c8d9',
+                  },
+                },
+              }}
+            >
+              <MenuItem style={{ padding: '20px' }}> <FontAwesomeIcon icon={faFileCode} style={{ width: '25px', height: 'auto' }} /> </MenuItem>
+              <MenuItem style={{ padding: '20px' }}> <FontAwesomeIcon icon={faFileExcel} style={{ width: '25px', height: 'auto' }} /> </MenuItem>
+
+            </Menu>
+          </Sidebar>
+        </div>
+
         <div className="flex flex-col w-full h-full justify-start items-end">
           <CodeEditorWindow
             code={code}
@@ -276,7 +303,6 @@ const Landing = () => {
         </div>
 
         <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
-          {/* <OutputWindow outputDetails={outputDetails} /> */}
           <Copilot />
         </div>
       </div>

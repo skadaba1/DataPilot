@@ -13,7 +13,7 @@ import { TypeAnimation } from 'react-type-animation';
 
 export default function Copilot() {
     const [inputValue, setInputValue] = useState('');
-    const [chatLog, setChatLog] = useState([]);
+    const [chatLog, setChatLog] = useState([{ type: 'bot', message: 'Hello! How can I assist you today?' }]);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = (event) => {
@@ -26,28 +26,8 @@ export default function Copilot() {
         setInputValue('');
     }
 
-    // const sendMessage = (message) => {
-    //     const url = 'https://api.openai.com/v1/engines/davinci/completions';
-    //     const apiKey = '';
-
-    //     const data = {
-    //         model: "gpt-3.5-turbo-0301",
-    //         messages: [{ "role": "user", "content": message }]
-    //     };
-
-    //     setIsLoading(true);
-
-    //     axios.post(url, data).then((response) => {
-    //         console.log(response);
-    //         setChatLog((prevChatLog) => [...prevChatLog, { type: 'bot', message: response.data.choices[0].message.content }])
-    //         setIsLoading(false);
-    //     }).catch((error) => {
-    //         setIsLoading(false);
-    //         console.log(error);
-    //     })
-    // }
-
     const sendMessage = (message) => {
+        console.log(chatLog)
         const url = 'https://api.openai.com/v1/chat/completions';
         const apiKey = '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'; // Your OpenAI API key
 
@@ -134,7 +114,7 @@ export default function Copilot() {
                                         ]}
                                         wrapper="span"
                                         cursor={true}
-                                        repeat={Infinity}
+                                        repeat={5}
                                         style={{ fontSize: '1em', display: 'inline-block' }}
                                     />
                                 </div>
