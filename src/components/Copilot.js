@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import harvest_logo from './copilot_logo_gray.png'; // Import the image
 // import Head from 'next/head'
 // import Image from 'next/image'
 // import { Inter } from 'next/font/google'
 // import styles from '@/styles/Home.module.css'
 import axios from 'axios';
-// import TypingAnimation from "../components/TypingAnimation";
+import { TypeAnimation } from 'react-type-animation';
 
 // const inter = Inter({ subsets: ['latin'] })
 
@@ -25,8 +26,30 @@ export default function Copilot() {
         setInputValue('');
     }
 
+    // const sendMessage = (message) => {
+    //     const url = 'https://api.openai.com/v1/engines/davinci/completions';
+    //     const apiKey = '';
+
+    //     const data = {
+    //         model: "gpt-3.5-turbo-0301",
+    //         messages: [{ "role": "user", "content": message }]
+    //     };
+
+    //     setIsLoading(true);
+
+    //     axios.post(url, data).then((response) => {
+    //         console.log(response);
+    //         setChatLog((prevChatLog) => [...prevChatLog, { type: 'bot', message: response.data.choices[0].message.content }])
+    //         setIsLoading(false);
+    //     }).catch((error) => {
+    //         setIsLoading(false);
+    //         console.log(error);
+    //     })
+    // }
+
     const sendMessage = (message) => {
-        const url = '/api/chat';
+        const url = 'https://api.openai.com/v1/chat/completions';
+        const apiKey = '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'; // Your OpenAI API key
 
         const data = {
             model: "gpt-3.5-turbo-0301",
@@ -35,30 +58,61 @@ export default function Copilot() {
 
         setIsLoading(true);
 
-        axios.post(url, data).then((response) => {
-            console.log(response);
-            setChatLog((prevChatLog) => [...prevChatLog, { type: 'bot', message: response.data.choices[0].message.content }])
-            setIsLoading(false);
-        }).catch((error) => {
-            setIsLoading(false);
-            console.log(error);
+        axios.post(url, data, {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+            },
         })
+            .then((response) => {
+                console.log(response.data.choices[0].message.content);
+                setChatLog((prevChatLog) => [
+                    ...prevChatLog,
+                    { type: 'bot', message: response.data.choices[0].message.content }
+                ]);
+                setIsLoading(false);
+            })
+            .catch((error) => {
+                setIsLoading(false);
+                console.log(error);
+            });
     }
 
     return (
         <div className="container mx-auto max-w-[700px]">
             <div className="flex flex-col h-screen bg-gray-900" style={{ maxHeight: "85vh", backgroundColor: "#efefef" }}>
-                <h2 className="bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text text-center py-3 font-bold text-2xl">Harvest Copilot</h2>
-                <img src="../../public/harvest_logo.png" alt="Your Image Description" className="text-center py-3 font-bold text-2xl" />
+                <img
+                    src={harvest_logo}
+                    alt="Your Image Description"
+                    className="text-center py-3 font-bold text-2xl"
+                    style={{
+                        width: '120px',
+                        height: 'auto',
+                        marginLeft: "15px"
+                    }}
+                />
                 <div className="flex-grow p-6">
                     <div className="flex flex-col space-y-4">
                         {
                             chatLog.map((message, index) => (
                                 <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'
                                     }`}>
-                                    <div className={`${message.type === 'user' ? 'bg-purple-500' : 'bg-gray-800'
-                                        } rounded-lg p-4 text-white max-w-sm`}>
-                                        {message.message}
+                                    <div className={`${message.type === 'user' ? 'lighter-orange' : 'gray'} rounded-lg p-2 max-w-sm`}>
+                                        {message.type === 'user' ? (
+                                            message.message
+                                        ) : (
+                                            <TypeAnimation
+                                                sequence={[
+                                                    message.message,
+                                                    () => {
+                                                        console.log('Sequence completed');
+                                                    },
+                                                ]}
+                                                wrapper="span"
+                                                cursor={false}
+                                                style={{ fontSize: '1em', display: 'inline-block' }}
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             ))
@@ -66,8 +120,23 @@ export default function Copilot() {
                         {
                             isLoading &&
                             <div key={chatLog.length} className="flex justify-start">
-                                <div className="bg-gray-800 rounded-lg p-4 text-white max-w-sm">
-                                    {/* <TypingAnimation /> */}
+                                <div className="gray rounded-lg p-2 max-w-sm">
+                                    <TypeAnimation
+                                        sequence={[
+                                            '.', // Types 'One'
+                                            100, // Waits 1s
+                                            '..', // Deletes 'One' and types 'Two'
+                                            200, // Waits 2s
+                                            '...', // Types 'Three' without deleting 'Two'
+                                            () => {
+                                                console.log('Sequence completed');
+                                            },
+                                        ]}
+                                        wrapper="span"
+                                        cursor={true}
+                                        repeat={Infinity}
+                                        style={{ fontSize: '1em', display: 'inline-block' }}
+                                    />
                                 </div>
                             </div>
                         }

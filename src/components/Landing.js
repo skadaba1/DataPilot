@@ -17,6 +17,8 @@ import OutputDetails from "./OutputDetails";
 import ThemeDropdown from "./ThemeDropdown";
 import LanguagesDropdown from "./LanguagesDropdown";
 
+import harvest_logo from "./harvest_logo_white.png"
+
 const javascriptDefault = `/**
 * Problem: Binary Search: Search a sorted array for a target value.
 */
@@ -215,7 +217,7 @@ const Landing = () => {
         pauseOnHover
       />
 
-      <a
+      {/* <a
         href="https://github.com/manuarora700/react-code-editor"
         title="Fork me on GitHub"
         class="github-corner"
@@ -242,14 +244,24 @@ const Landing = () => {
             class="octo-body"
           ></path>
         </svg>
-      </a>
+      </a> */}
 
-      <div className="h-4 w-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500"></div>
+      {/* <div className="h-4 w-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500"></div> */}
       <div className="flex flex-row">
-        <div className="px-4 py-2">
+        <img
+          src={harvest_logo}
+          alt="Your Image Description"
+          className="text-center py-3 font-bold text-2xl"
+          style={{
+            width: '200px',
+            height: 'auto',
+            marginLeft: "15px"
+          }}
+        />
+        <div className="px-6 py-4">
           <LanguagesDropdown onSelectChange={onSelectChange} />
         </div>
-        <div className="px-4 py-2">
+        <div className="px-6 py-4">
           <ThemeDropdown handleThemeChange={handleThemeChange} theme={theme} />
         </div>
       </div>

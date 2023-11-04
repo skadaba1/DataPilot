@@ -32,7 +32,17 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+.lighter-orange {
+  background-color: #fbb48c;
+}
+
+.gray {
+  background-color: #b4b4b4;
+  ;
 }
