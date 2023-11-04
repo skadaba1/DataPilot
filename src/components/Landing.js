@@ -87,6 +87,15 @@ const Landing = () => {
       }
     }
   };
+
+  // for code editor window
+
+  const [editorContent, setEditorContent] = useState(""); // State to store the editor content
+
+  const handleEditorContentChange = (newContent) => {
+    setEditorContent(newContent); // Update editor content when it changes
+  };
+
   const handleCompile = () => {
     setProcessing(true);
     const formData = {
@@ -299,11 +308,14 @@ const Landing = () => {
             onChange={onChange}
             language={language?.value}
             theme={theme.value}
+            handleEditorContentChange={handleEditorContentChange} 
           />
         </div>
 
         <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
-          <Copilot />
+          <Copilot 
+          editorContent={editorContent} 
+          />
         </div>
       </div>
       {/* <Footer /> */}

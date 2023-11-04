@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
@@ -11,12 +12,18 @@ import { TypeAnimation } from 'react-type-animation';
 
 // const inter = Inter({ subsets: ['latin'] })
 
-export default function Copilot() {
+export default function Copilot({ editorContent }) {
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const conversationRef = React.useRef([{ role: "system", content: "You are a helpful assistant." }]);
+
+  useEffect(() => {
+    // When the editor content changes, update the inputValue state
+    setInputValue(editorContent);
+    console.log(editorContent);
+  }, [editorContent]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
