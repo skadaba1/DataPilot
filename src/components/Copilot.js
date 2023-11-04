@@ -12,6 +12,7 @@ import { TypeAnimation } from 'react-type-animation';
 
 // const inter = Inter({ subsets: ['latin'] })
 let currentCodeState = "";
+let sendIntroduction = true;
 export default function Copilot({ editorContent }) {
 
     // editorContent is current user code 
@@ -20,10 +21,16 @@ export default function Copilot({ editorContent }) {
     const [chatLog, setChatLog] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const conversationRef = React.useRef([{ role: "system", content: "You are a help assistant looking to help a data anlayst in their workflow." }]);
+    const conversationRef = React.useRef([{ role: "system", content: "You are the Harvest AI help assistant whose job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise." }]);
+
     useEffect(() => {
         // When the editor content changes, update the inputValue state
         currentCodeState = editorContent;
+        // add conditions here based on parsing code content to make suggestions
+        if (sendIntroduction) {
+            sendMessage(conversationRef.current);
+            sendIntroduction = false;
+        }
     }, [editorContent]);
 
     /*"Here is my current code, I am trying to build some predictive model. Please try to categorize my code into one of the following...
@@ -41,13 +48,22 @@ export default function Copilot({ editorContent }) {
       Please tell me what you think my model does and make a guess for its intended purpose? Give 5 guesses. 
     "*/
 
+    const buildQuery = (userQuery) => {
+        let codeIntro = "Here is my current code: ";
+        let newline = "\n";
+        let conciseRequest = "Please be concise in your response.";
+        let message = codeIntro + newline + currentCodeState + newline + userQuery + newline + conciseRequest;
+        return message;
+    }
+
     const handleSubmit = (event) => {
         event.preventDefault();
 
         setChatLog((prevChatLog) => [...prevChatLog, { type: "user", message: inputValue }]);
 
         //const flag = "add to chat log";
-        sendMessage(inputValue);
+        conversationRef.current.push({role: "user", content: buildQuery(inputValue)});
+        sendMessage(conversationRef.current);
 
         setInputValue("");
     };
@@ -57,14 +73,14 @@ export default function Copilot({ editorContent }) {
         const apiKey = "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"; // Your OpenAI API key
 
         // Include user context using the ref
-        const preface = "Here is my current code: ";
-        const newline = "\n";
-        const postfix = "Please be concise in your reponse.";
-        let final = preface + newline + currentCodeState + newline + message + newline + postfix;
-        conversationRef.current.push({ role: "user", content: final });
+        // const preface = "Here is my current code: ";
+        // const newline = "\n";
+        // const postfix = "Please be concise in your reponse.";
+        // let final = preface + newline + currentCodeState + newline + message + newline + postfix;
+        //conversationRef.current.push({ role: "user", content: final });
         const data = {
             model: "gpt-3.5-turbo-0301",
-            messages: conversationRef.current // Pass the entire conversation history here
+            messages: message // Pass the entire conversation history here
         };
 
         setIsLoading(true);
