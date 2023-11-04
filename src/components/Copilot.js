@@ -14,35 +14,35 @@ import { TypeAnimation } from 'react-type-animation';
 let currentCodeState = "";
 export default function Copilot({ editorContent }) {
 
-  // editorContent is current user code 
+    // editorContent is current user code 
 
-  const [inputValue, setInputValue] = useState("");
-  const [chatLog, setChatLog] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+    const [inputValue, setInputValue] = useState("");
+    const [chatLog, setChatLog] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
-  const conversationRef = React.useRef([{ role: "system", content: "You are a help assistant looking to help a data anlayst in their workflow." }]);
-  useEffect(() => {
-    // When the editor content changes, update the inputValue state
-    currentCodeState = editorContent;
-  }, [editorContent]);
+    const conversationRef = React.useRef([{ role: "system", content: "You are a help assistant looking to help a data anlayst in their workflow." }]);
+    useEffect(() => {
+        // When the editor content changes, update the inputValue state
+        currentCodeState = editorContent;
+    }, [editorContent]);
 
-  /*"Here is my current code, I am trying to build some predictive model. Please try to categorize my code into one of the following...
-    1. Linear Regression
-    2. Multivariate Linear Regression
-    3. Polynomial Regression
-    4. Logistic Regression (binary classification)
-    5. Gaussian/stochastic process
-    6. Neural Network
-    7. Decision trees
-    8. Random Forests
-    9. Genetic algorithm
-    10. K-means clustering
+    /*"Here is my current code, I am trying to build some predictive model. Please try to categorize my code into one of the following...
+      1. Linear Regression
+      2. Multivariate Linear Regression
+      3. Polynomial Regression
+      4. Logistic Regression (binary classification)
+      5. Gaussian/stochastic process
+      6. Neural Network
+      7. Decision trees
+      8. Random Forests
+      9. Genetic algorithm
+      10. K-means clustering
+  
+      Please tell me what you think my model does and make a guess for its intended purpose? Give 5 guesses. 
+    "*/
 
-    Please tell me what you think my model does and make a guess for its intended purpose? Give 5 guesses. 
-  "*/
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
+    const handleSubmit = (event) => {
+        event.preventDefault();
 
         setChatLog((prevChatLog) => [...prevChatLog, { type: "user", message: inputValue }]);
 
@@ -79,7 +79,7 @@ export default function Copilot({ editorContent }) {
             .then((response) => {
                 // Add the bot's response to the conversation history using the ref
                 conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
-                
+
                 //if (flag == "add to chat log") {
                 setChatLog((prevChatLog) => [
                     ...prevChatLog,
