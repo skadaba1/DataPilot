@@ -11,25 +11,42 @@ import axios from 'axios';
 import { TypeAnimation } from 'react-type-animation';
 
 // const inter = Inter({ subsets: ['latin'] })
-
+let currentCodeState = "";
 export default function Copilot({ editorContent }) {
+
+  // editorContent is current user code 
+
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const conversationRef = React.useRef([{ role: "system", content: "You are a helpful assistant." }]);
-
+  const conversationRef = React.useRef([{ role: "system", content: "You are a help assistant looking to help a data anlayst in their workflow." }]);
   useEffect(() => {
     // When the editor content changes, update the inputValue state
-    setInputValue(editorContent);
-    console.log(editorContent);
+    currentCodeState = editorContent;
   }, [editorContent]);
+
+  /*"Here is my current code, I am trying to build some predictive model. Please try to categorize my code into one of the following...
+    1. Linear Regression
+    2. Multivariate Linear Regression
+    3. Polynomial Regression
+    4. Logistic Regression (binary classification)
+    5. Gaussian/stochastic process
+    6. Neural Network
+    7. Decision trees
+    8. Random Forests
+    9. Genetic algorithm
+    10. K-means clustering
+
+    Please tell me what you think my model does and make a guess for its intended purpose? Give 5 guesses. 
+  "*/
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
         setChatLog((prevChatLog) => [...prevChatLog, { type: "user", message: inputValue }]);
 
+        //const flag = "add to chat log";
         sendMessage(inputValue);
 
         setInputValue("");
@@ -40,11 +57,14 @@ export default function Copilot({ editorContent }) {
         const apiKey = "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"; // Your OpenAI API key
 
         // Include user context using the ref
-        conversationRef.current.push({ role: "user", content: message });
-
+        const preface = "Here is my current code: ";
+        const newline = "\n";
+        const postfix = "Please be concise in your reponse.";
+        let final = preface + newline + currentCodeState + newline + message + newline + postfix;
+        conversationRef.current.push({ role: "user", content: final });
         const data = {
             model: "gpt-3.5-turbo-0301",
-            messages: conversationRef.current, // Pass the entire conversation history here
+            messages: conversationRef.current // Pass the entire conversation history here
         };
 
         setIsLoading(true);
@@ -59,11 +79,13 @@ export default function Copilot({ editorContent }) {
             .then((response) => {
                 // Add the bot's response to the conversation history using the ref
                 conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
-
+                
+                //if (flag == "add to chat log") {
                 setChatLog((prevChatLog) => [
                     ...prevChatLog,
                     { type: "bot", message: response.data.choices[0].message.content },
                 ]);
+                //}
 
                 setIsLoading(false);
             })
