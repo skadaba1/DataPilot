@@ -78,7 +78,7 @@ export default function Copilot({ editorContent }) {
     }
 
     const buildQuery = (userQuery, logContext) => {
-        let contextIntro = "Here is some context from previous chat session that might be helpful: "
+        let contextIntro = "Here is some context from previous chat sessions that might be helpful: "
         let codeIntro = "Here is my current code: ";
         let newline = "\n";
         let conciseRequest = "Please be concise in your response.";
