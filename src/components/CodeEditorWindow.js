@@ -9,12 +9,12 @@ const CodeEditorWindow = ({
   code,
   theme,
 }) => {
-  const [value, setValue] = useState(code || "");
+  const [editorContent, setEditorContent] = useState(code || "");
 
-  const handleEditorChange = (value) => {
-    setValue(value);
-    handleEditorContentChange(value);
-    onChange("code", value);
+  const handleEditorChange = (newEditorContent) => {
+    setEditorContent(newEditorContent);
+    handleEditorContentChange(editorContent);
+    onChange("code", editorContent);
   };
 
   const handleEditorMount = (editor, monaco) => {
@@ -41,7 +41,7 @@ const CodeEditorWindow = ({
         height="85vh"
         width={`100%`}
         language={language || "python"}
-        value={value}
+        value={editorContent}
         theme={theme}
         defaultValue="// some comment"
         onChange={handleEditorChange}

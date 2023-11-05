@@ -7,8 +7,9 @@ import axios from 'axios';
 import { TypeAnimation } from 'react-type-animation';
 
 let currentCodeState = "";
+let currentDataContent = "";
 let sendIntroduction = true;
-export default function Copilot({ editorContent }) {
+export default function Copilot({ editorContent, dataContent }) {
 
     // editorContent is current user code 
 
@@ -19,7 +20,7 @@ export default function Copilot({ editorContent }) {
     const [logs, setLogs] = useState("")
     const [loading, setLoading] = useState(true)
 
-    const conversationRef = React.useRef([{ role: "system", content: "You are the Harvest AI help assistant whose job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role and ask me about the task I am working on. Please be concise." }]);
+    const conversationRef = React.useRef([{ role: "system", content: "You are the Harvest AI help assistant. Your job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise. When answering future questions, you do not need to reintroduce yourself." }]);
     
     const [counter, setCounter] = useState(0);
 
@@ -33,9 +34,13 @@ export default function Copilot({ editorContent }) {
         return query
     }
     
+    // for when the editor content changes
     useEffect(() => {
-        // When the editor content changes, update the inputValue state
         currentCodeState = editorContent;
+        if (sendIntroduction) {
+            sendMessage(conversationRef.current);
+            sendIntroduction = false;
+        }
         // add conditions here based on parsing code content to make suggestions
         if(counter >= 100) {
             setCounter(0);
@@ -47,13 +52,27 @@ export default function Copilot({ editorContent }) {
             sendMessage(conversationRef.current, flag);
             return;
         }
-        if (sendIntroduction) {
-            sendMessage(conversationRef.current);
-            sendIntroduction = false;
-        }
         fetchLogs()
         setCounter(counter + 1);
     }, [editorContent]);
+
+    const buildDatasetQuery = () => {
+        let intro = "Here is a new dataset. When you receive it, please tell me 'I have reviewed your new dataset.' Then, provide me with a summary of the dataset."
+        let newline = "\n";
+        let conciseRequest = "Please be concise in yur response."
+        return intro + newline + currentDataContent + newline + conciseRequest;
+    }
+
+    // for when new dataset is uploaded
+    useEffect(() => {
+        // second check is so that the message is only sent the first time the user comes back to the landing page
+        if (dataContent != "" && dataContent != currentDataContent) {
+            currentDataContent = dataContent;
+            const message = buildDatasetQuery()
+            conversationRef.current.push({role: "user", content: message})
+            sendMessage(conversationRef.current);
+        }
+    }, [dataContent]);
 
     // Fetch all Logs
     const fetchLogs = async () => {
@@ -101,7 +120,7 @@ export default function Copilot({ editorContent }) {
     }
 
     const buildQuery = (userQuery, logs) => {
-        let contextIntro = "Here is some context from previous chat session that might be helpful: "
+        let contextIntro = "Here is some context from previous chat sessions that might be helpful: "
         let codeIntro = "Here is my current code: ";
         let newline = "\n";
         let conciseRequest = "Please be very concise in your response.";
@@ -130,7 +149,6 @@ export default function Copilot({ editorContent }) {
             handleLogCreate(r, q);
         }
 
-        
     };
 
     const sendMessage = (message, flag) => {

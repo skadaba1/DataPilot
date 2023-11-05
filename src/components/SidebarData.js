@@ -18,8 +18,8 @@ export const SidebarData = [
         cName: 'nav-text'
     },
     {
-        title: 'Databases',
-        path: '/databases',
+        title: 'Datasets',
+        path: '/datasets',
         icon: <BsIcons.BsDatabaseFillGear />,
         cName: 'nav-text'
     }

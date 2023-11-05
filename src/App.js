@@ -1,20 +1,33 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing.js';
-import DatabasePage from './pages/DatabasePage.js';
+import DatasetsPage from './pages/DatasetsPage.js';
 import SpreadsheetPage from './pages/SpreadsheetPage.js';
 
 function App() {
+
+  const [dataContent, setDataContent] = useState("");
+
+  const handleFileUploadApp = (newDataContent) => {
+    setDataContent(newDataContent);
+  };
+
   return (
     <>
       <Router>
         <Navbar />
         <Routes>
-          <Route path='/' exact element={<Landing />} />
-          <Route path='/databases' element={<DatabasePage />} />
-          <Route path='/spreadsheet' element={<SpreadsheetPage />} />
+          <Route 
+          path='/' 
+          element={<Landing dataContent = {dataContent}/>} />
+          <Route 
+          path='/datasets' 
+          element = {<DatasetsPage onFileUploadNotifyApp = {handleFileUploadApp}/>} />
+          <Route 
+          path='/spreadsheet' 
+          element={<SpreadsheetPage />} />
         </Routes>
       </Router>
     </>

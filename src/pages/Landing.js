@@ -17,38 +17,42 @@ import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileCode, faFileExcel } from '@fortawesome/free-regular-svg-icons';
 
-const javascriptDefault = `/**
-* Problem: Binary Search: Search a sorted array for a target value.
-*/
+// const javascriptDefault = `/**
+// * Problem: Binary Search: Search a sorted array for a target value.
+// */
 
-// Time: O(log n)
-const binarySearch = (arr, target) => {
- return binarySearchHelper(arr, target, 0, arr.length - 1);
-};
+// // Time: O(log n)
+// const binarySearch = (arr, target) => {
+//  return binarySearchHelper(arr, target, 0, arr.length - 1);
+// };
 
-const binarySearchHelper = (arr, target, start, end) => {
- if (start > end) {
-   return false;
- }
- let mid = Math.floor((start + end) / 2);
- if (arr[mid] === target) {
-   return mid;
- }
- if (arr[mid] < target) {
-   return binarySearchHelper(arr, target, mid + 1, end);
- }
- if (arr[mid] > target) {
-   return binarySearchHelper(arr, target, start, mid - 1);
- }
-};
+// const binarySearchHelper = (arr, target, start, end) => {
+//  if (start > end) {
+//    return false;
+//  }
+//  let mid = Math.floor((start + end) / 2);
+//  if (arr[mid] === target) {
+//    return mid;
+//  }
+//  if (arr[mid] < target) {
+//    return binarySearchHelper(arr, target, mid + 1, end);
+//  }
+//  if (arr[mid] > target) {
+//    return binarySearchHelper(arr, target, start, mid - 1);
+//  }
+// };
 
-const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const target = 5;
-console.log(binarySearch(arr, target));
+// const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+// const target = 5;
+// console.log(binarySearch(arr, target));
+// `;
+
+const pythonDefault = `/* Harvest AI editor and compiler. Write your code here. */
+print("Hello World");
 `;
 
-const Landing = () => {
-  const [code, setCode] = useState(javascriptDefault);
+export default function Landing({dataContent}) {
+  const [code, setCode] = useState(pythonDefault);
   const [customInput, setCustomInput] = useState("");
   const [outputDetails, setOutputDetails] = useState(null);
   const [processing, setProcessing] = useState(null);
@@ -82,12 +86,12 @@ const Landing = () => {
     }
   };
 
-  // for code editor window
+  // for editorContent changes
 
   const [editorContent, setEditorContent] = useState(""); // State to store the editor content
 
-  const handleEditorContentChange = (newContent) => {
-    setEditorContent(newContent); // Update editor content when it changes
+  const handleEditorContentChange = (newEditorContent) => {
+    setEditorContent(newEditorContent); // Update editor content when it changes
   };
 
   const handleCompile = () => {
@@ -239,11 +243,14 @@ const Landing = () => {
         </div>
 
         <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
-          <Copilot editorContent={editorContent} />
+          <Copilot
+            editorContent={editorContent}
+            dataContent={dataContent}
+          />
         </div>
       </div>
       {/* <Footer /> */}
     </>
   );
 };
-export default Landing;
+//export default Landing;
