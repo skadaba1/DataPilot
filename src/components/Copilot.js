@@ -39,10 +39,10 @@ export default function Copilot({ editorContent }) {
         .get('http://localhost:4001/logs/all')
         .then(response => {
             // Update the books state
-            setLogs(JSON.stringify(response.data));
-            console.log(response.data);
+            setLogs(JSON.stringify(response.data))
+            console.log(response.data)
             // Update loading state
-            setLoading(false);
+            setLoading(false)
         })
         .catch(error => console.error(`There was an error retrieving the book list: ${error}`))
     }
@@ -56,7 +56,7 @@ export default function Copilot({ editorContent }) {
         message: me,
       })
       .then(res => {
-        console.log(res.data);
+        console.log(res.data)
 
         // Fetch all books to refresh
         // the books on the bookshelf list
@@ -77,12 +77,12 @@ export default function Copilot({ editorContent }) {
         .catch(error => console.error(`There was an error resetting the logs: ${error}`))
     }
 
-    const buildQuery = (userQuery, logContext) => {
-        let contextIntro = "Here is some context from previous chat sessions that might be helpful: "
+    const buildQuery = (userQuery, logs) => {
+        let contextIntro = "Here is some context from previous chat session that might be helpful: "
         let codeIntro = "Here is my current code: ";
         let newline = "\n";
         let conciseRequest = "Please be concise in your response.";
-        let message = contextIntro + newline + logContext + newline + newline + codeIntro + newline + currentCodeState + 
+        let message = contextIntro + newline + logs + newline + newline + codeIntro + newline + currentCodeState + 
                       newline + newline + userQuery + newline + conciseRequest;
         return message;
     }
@@ -99,9 +99,9 @@ export default function Copilot({ editorContent }) {
         sendMessage(conversationRef.current, inputValue);
         setInputValue("");
 
-        const clearLogs = "clearlogs"
-        if(inputValue == clearLogs) {
-            handleLogReset(r, q);
+        const clearLogs = "clearlogs";
+        if(inputValue === clearLogs) {
+            handleLogReset();
         } else {
             handleLogCreate(r, q);
         }
@@ -134,19 +134,19 @@ export default function Copilot({ editorContent }) {
                 },
             })
             .then((response) => {
-                if(inputValue != "clearlogs") {
-                // Add the bot's response to the conversation history using the ref
-                conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
-                const r = "assistant";
-                const q = response.data.choices[0].message.content;
-                handleLogCreate(r, q);
-                //if (flag == "add to chat log") {
-                setChatLog((prevChatLog) => [
-                    ...prevChatLog,
-                    { type: "bot", message: response.data.choices[0].message.content },
-                ]);
+                if(inputValue !== 'clearlogs') {
+                    // Add the bot's response to the conversation history using the ref
+                    conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
+                    const r = "assistant";
+                    const q = response.data.choices[0].message.content;
+                    handleLogCreate(r, q);
+                    //if (flag == "add to chat log") {
+                    setChatLog((prevChatLog) => [
+                        ...prevChatLog,
+                        { type: "bot", message: response.data.choices[0].message.content },
+                    ]);
+                }
                 //}
-            }
 
                 setIsLoading(false);
             })
