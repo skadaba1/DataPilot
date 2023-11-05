@@ -124,12 +124,11 @@ export default function Copilot({ editorContent }) {
                         marginLeft: "15px"
                     }}
                 />
-                <div className="flex-grow p-6">
+                <div className="flex-grow p-6" style={{ overflowY: "auto" }}>
                     <div className="flex flex-col space-y-4">
                         {
                             chatLog.map((message, index) => (
-                                <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'
-                                    }`}>
+                                <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`} style={{ wordWrap: 'break-word'}}>
                                     <div className={`${message.type === 'user' ? 'lighter-orange' : 'gray'} rounded-lg p-2 max-w-sm`}>
                                         {message.type === 'user' ? (
                                             message.message
