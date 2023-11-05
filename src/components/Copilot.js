@@ -207,6 +207,7 @@ export default function Copilot({ editorContent }) {
                                                 wrapper="span"
                                                 cursor={false}
                                                 style={{ fontSize: '1em', display: 'inline-block' }}
+                                                typeSpeed={200}
                                             />
                                         )}
                                     </div>

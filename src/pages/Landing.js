@@ -239,9 +239,7 @@ const Landing = () => {
         </div>
 
         <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
-          <Copilot
-            editorContent={editorContent}
-          />
+          <Copilot editorContent={editorContent} />
         </div>
       </div>
       {/* <Footer /> */}

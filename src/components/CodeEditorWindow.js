@@ -19,11 +19,11 @@ const CodeEditorWindow = ({
 
   const handleEditorMount = (editor, monaco) => {
     let decorations = []; // Store decoration ids
-  
+
     editor.onDidChangeModelContent(() => {
       // Remove previous decorations
       decorations = editor.deltaDecorations(decorations, []);
-  
+
       // Add new decorations
       decorations = editor.deltaDecorations([], [
         {
@@ -33,14 +33,14 @@ const CodeEditorWindow = ({
       ]);
     });
   };
-  
+
 
   return (
     <div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
       <Editor
         height="85vh"
         width={`100%`}
-        language={language || "javascript"}
+        language={language || "python"}
         value={value}
         theme={theme}
         defaultValue="// some comment"
