@@ -3,14 +3,9 @@ import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import harvest_logo from './copilot_gray.png'; // Import the image
-// import Head from 'next/head'
-// import Image from 'next/image'
-// import { Inter } from 'next/font/google'
-// import styles from '@/styles/Home.module.css'
 import axios from 'axios';
 import { TypeAnimation } from 'react-type-animation';
 
-// const inter = Inter({ subsets: ['latin'] })
 let currentCodeState = "";
 let sendIntroduction = true;
 export default function Copilot({ editorContent }) {
@@ -21,8 +16,11 @@ export default function Copilot({ editorContent }) {
     const [chatLog, setChatLog] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const conversationRef = React.useRef([{ role: "system", content: "You are the Harvest AI help assistant whose job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise." }]);
+    const [logs, setLogs] = useState([])
+    const [loading, setLoading] = useState(true)
 
+    const conversationRef = React.useRef([{ role: "system", content: "You are the Harvest AI help assistant whose job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise." }]);
+    
     useEffect(() => {
         // When the editor content changes, update the inputValue state
         currentCodeState = editorContent;
@@ -33,20 +31,55 @@ export default function Copilot({ editorContent }) {
         }
     }, [editorContent]);
 
-    /*"Here is my current code, I am trying to build some predictive model. Please try to categorize my code into one of the following...
-      1. Linear Regression
-      2. Multivariate Linear Regression
-      3. Polynomial Regression
-      4. Logistic Regression (binary classification)
-      5. Gaussian/stochastic process
-      6. Neural Network
-      7. Decision trees
-      8. Random Forests
-      9. Genetic algorithm
-      10. K-means clustering
-  
-      Please tell me what you think my model does and make a guess for its intended purpose? Give 5 guesses. 
-    "*/
+    // Fetch all books on initial render
+    useEffect(() => {
+        fetchLogs()
+    }, [])
+
+    // Fetch all Logs
+    const fetchLogs = async () => {
+        // Send GET request to 'books/all' endpoint
+        axios
+        .get('http://localhost:4001/logs/all')
+        .then(response => {
+            // Update the books state
+            setLogs(response.data)
+            console.log(response.data)
+            // Update loading state
+            setLoading(false)
+        })
+        .catch(error => console.error(`There was an error retrieving the book list: ${error}`))
+    }
+
+    // Create new log
+    const handleLogCreate = (rl, me) => {
+    // Send POST request to 'books/create' endpoint
+    axios
+      .post('http://localhost:4001/logs/create', {
+        role: rl,
+        message: me,
+      })
+      .then(res => {
+        console.log(res.data)
+
+        // Fetch all books to refresh
+        // the books on the bookshelf list
+        fetchLogs()
+      })
+      .catch(error => console.error(`There was an error creating the log: ${error}`))
+    }
+
+    // Reset log list (remove all books)
+    const handleLogReset = () => {
+        // Send PUT request to 'books/reset' endpoint
+        axios.put('http://localhost:4001/logs/reset')
+        .then(() => {
+        // Fetch all books to refresh
+        // the books on the bookshelf list
+        fetchLogs()
+        })
+        .catch(error => console.error(`There was an error resetting the logs: ${error}`))
+    }
 
     const buildQuery = (userQuery) => {
         let codeIntro = "Here is my current code: ";
@@ -62,10 +95,21 @@ export default function Copilot({ editorContent }) {
         setChatLog((prevChatLog) => [...prevChatLog, { type: "user", message: inputValue }]);
 
         //const flag = "add to chat log";
-        conversationRef.current.push({ role: "user", content: buildQuery(inputValue) });
+        const r = "user";
+        const q = buildQuery(inputValue);
+        conversationRef.current.push({role: r, content: q});
         sendMessage(conversationRef.current);
-
         setInputValue("");
+
+        const clearLogs = "clearlogs"
+        if(inputValue == clearLogs) {
+            console.log("TEST PASSED")
+            handleLogReset(r, q);
+        } else {
+            handleLogCreate(r, q);
+        }
+
+        
     };
 
     const sendMessage = (message) => {
@@ -95,7 +139,9 @@ export default function Copilot({ editorContent }) {
             .then((response) => {
                 // Add the bot's response to the conversation history using the ref
                 conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
-
+                const r = "assistant";
+                const q = response.data.choices[0].message.content;
+                handleLogCreate(r, q);
                 //if (flag == "add to chat log") {
                 setChatLog((prevChatLog) => [
                     ...prevChatLog,
