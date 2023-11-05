@@ -1,14 +1,13 @@
 # Harvest.ai
 TODO
-1. Fix vertical scrolling in chat stream
-2. Fix horizontal scrolling in chat input
-3. Remove/move buttons for code selection/style selection (style named "IDLE" matches our theme really well)
-4. Fix database icons
-5. Remove top bar?
-6. Build functionality for database upload
-7. Pass databases as strings to query
-8. Build some chain of thought prompting
-9. Add auto-suggestions (can be triggered rule-based) so users don't have to submit questions before recieving feedback
+- Build functionality for database upload
+- Pass databases as strings to query
+- Build some chain of thought prompting
+- Add auto-suggestions (can be triggered rule-based) so users don't have to submit questions before recieving feedback
+- Ideal Demo
+  - Upload Non-linear dataset
+  - Use linear regression in code --> copilot points out error by training on dataset
+  - Use an example where a previous user builds a function to do something and you also want to do that same thing so it lets you know
 10. Spreadsheet capability?
 
 
