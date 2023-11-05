@@ -1,36 +1,56 @@
-import React, { useState } from 'react';
-import './FileUpload.css';
+import React from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import './FileUpload.scss'
+import axios from 'axios'
 
-function FileUpload({ onFileUpload }) {
-  const [selectedFile, setSelectedFile] = useState(null);
+const FileUpload = ({ files, setFiles, removeFile }) => {
+  const uploadHandler = (event) => {
+    console.log("handler triggered")
+    const file = event.target.files[0];
+    if (!file) return;
+    file.isUploading = true;
+    setFiles([...files, file])
 
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-  };
-
-  const handleUpload = () => {
-    if (selectedFile) {
-      onFileUpload(selectedFile);
-      setSelectedFile(null);
-    }
-  };
+    // upload file
+    const formData = new FormData();
+    formData.append(
+      "newFile",
+      file,
+      file.name
+    )
+    axios.post('http://localhost:8080/upload', formData)
+      .then((res) => {
+        file.isUploading = false;
+        setFiles([...files, file])
+      })
+      .catch((err) => {
+        // inform the user
+        console.error(err)
+        removeFile(file.name)
+      });
+  }
 
   return (
-    <div className="file-upload">
-      <label htmlFor="file-input" className="upload-button">
-        Upload Database
-      </label>
-      <input
-        type="file"
-        id="file-input"
-        accept=".csv, .xlsx, .json" // Specify accepted file types
-        onChange={handleFileChange}
-      />
-      <button className="upload-button" onClick={handleUpload}>
-        Upload
-      </button>
-    </div>
-  );
+    <>
+      <div className="file-card">
+
+        <div className="file-inputs">
+          <input type="file" onChange={uploadHandler} />
+          <button>
+            <i>
+              <FontAwesomeIcon icon={faPlus} />
+            </i>
+            Upload
+          </button>
+        </div>
+
+        <p className="main">Supported files</p>
+        <p className="info">PDF, JPG, PNG</p>
+
+      </div>
+    </>
+  )
 }
 
-export default FileUpload;
+export default FileUpload

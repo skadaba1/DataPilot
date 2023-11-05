@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import harvest_logo from './copilot_logo_gray.png'; // Import the image
+import harvest_logo from './copilot_gray.png'; // Import the image
 // import Head from 'next/head'
 // import Image from 'next/image'
 // import { Inter } from 'next/font/google'
@@ -62,7 +62,7 @@ export default function Copilot({ editorContent }) {
         setChatLog((prevChatLog) => [...prevChatLog, { type: "user", message: inputValue }]);
 
         //const flag = "add to chat log";
-        conversationRef.current.push({role: "user", content: buildQuery(inputValue)});
+        conversationRef.current.push({ role: "user", content: buildQuery(inputValue) });
         sendMessage(conversationRef.current);
 
         setInputValue("");
@@ -113,7 +113,7 @@ export default function Copilot({ editorContent }) {
 
     return (
         <div className="container mx-auto max-w-[700px]">
-            <div className="flex flex-col h-screen bg-gray-900" style={{ maxHeight: "85vh", backgroundColor: "#efefef" }}>
+            <div className="flex flex-col h-screen bg-gray-900" style={{ maxHeight: "85vh", backgroundColor: "#e9e9e9" }}>
                 <img
                     src={harvest_logo}
                     alt="Your Image Description"
@@ -128,7 +128,11 @@ export default function Copilot({ editorContent }) {
                     <div className="flex flex-col space-y-4">
                         {
                             chatLog.map((message, index) => (
-                                <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`} style={{ wordWrap: 'break-word'}}>
+                                <div
+                                    key={index}
+                                    className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                                    style={{ fontFamily: "'Cerebri Sans', sans-serif", wordWrap: 'break-word' }}
+                                >
                                     <div className={`${message.type === 'user' ? 'lighter-orange' : 'gray'} rounded-lg p-2 max-w-sm`}>
                                         {message.type === 'user' ? (
                                             message.message

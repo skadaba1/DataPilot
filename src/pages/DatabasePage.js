@@ -1,25 +1,23 @@
-import React, { useState } from 'react';
-import FileUpload from '../components/FileUpload';
+import { useState } from 'react'
 import './DatabasePage.css';
+import FileUpload from '../components/FileUpload';
+import FileList from '../components/FileList';
 
-function DatabasePage() {
-  const [uploadedFile, setUploadedFile] = useState(null);
+function App() {
+  const [files, setFiles] = useState([])
 
-  const handleFileUpload = (file) => {
-    setUploadedFile(file);
-  };
+  const removeFile = (filename) => {
+    setFiles(files.filter(file => file.name !== filename))
+  }
 
   return (
-    <div className="databases-container">
-      <h1 className="databases-title">Databases</h1>
-      <FileUpload onFileUpload={handleFileUpload} />
-      {uploadedFile && (
-        <div className="uploaded-file">
-          Uploaded File: {uploadedFile.name}
-        </div>
-      )}
+    <div className="App">
+      <div className="title">Upload file</div>
+      <FileUpload files={files} setFiles={setFiles}
+        removeFile={removeFile} />
+      <FileList files={files} removeFile={removeFile} />
     </div>
   );
 }
 
-export default DatabasePage;
+export default App;
