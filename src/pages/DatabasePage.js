@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
 import FileUpload from '../components/FileUpload';
-import './DatabasePage.css'
+import './DatabasePage.css';
 
 function DatabasePage() {
-  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploadedFile, setUploadedFile] = useState(null);
 
   const handleFileUpload = (file) => {
-    setUploadedFiles((prevFiles) => [...prevFiles, file]);
+    setUploadedFile(file);
   };
 
-  
   return (
     <div className="databases-container">
       <h1 className="databases-title">Databases</h1>
       <FileUpload onFileUpload={handleFileUpload} />
-      {uploadedFiles.map((file, index) => (
-        <div key={index} className="uploaded-file">
-          Uploaded File: {file.name}
+      {uploadedFile && (
+        <div className="uploaded-file">
+          Uploaded File: {uploadedFile.name}
         </div>
-      ))}
+      )}
     </div>
   );
 }

@@ -17,3 +17,12 @@
     font-size: 18px;
     margin: 5px 0;
   }
+
+  .upload-button {
+    background-color: lightblue; /* You can change this to your desired light color */
+    color: black; /* Text color */
+    padding: 10px 20px; /* Adjust padding as needed */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }

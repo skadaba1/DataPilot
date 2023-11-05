@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
+import './FileUpload.css';
 
 function FileUpload({ onFileUpload }) {
   const [selectedFile, setSelectedFile] = useState(null);
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    setSelectedFile(file);
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
   };
 
   const handleUpload = () => {
     if (selectedFile) {
       onFileUpload(selectedFile);
-      setSelectedFile(null); // Clear the selected file
+      setSelectedFile(null);
     }
   };
 
   return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload</button>
+    <div className="file-upload">
+      <label htmlFor="file-input" className="upload-button">
+        Upload Database
+      </label>
+      <input
+        type="file"
+        id="file-input"
+        accept=".csv, .xlsx, .json" // Specify accepted file types
+        onChange={handleFileChange}
+      />
+      <button className="upload-button" onClick={handleUpload}>
+        Upload
+      </button>
     </div>
   );
 }
