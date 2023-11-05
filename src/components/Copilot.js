@@ -96,7 +96,7 @@ export default function Copilot({ editorContent }) {
         const r = "user";
         const q = buildQuery(inputValue, logs);
         conversationRef.current.push({role: r, content: q});
-        sendMessage(conversationRef.current);
+        sendMessage(conversationRef.current, inputValue);
         setInputValue("");
 
         const clearLogs = "clearlogs"
@@ -109,7 +109,7 @@ export default function Copilot({ editorContent }) {
         
     };
 
-    const sendMessage = (message) => {
+    const sendMessage = (message, inputValue) => {
         const url = "https://api.openai.com/v1/chat/completions";
         const apiKey = "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"; // Your OpenAI API key
 
@@ -134,6 +134,7 @@ export default function Copilot({ editorContent }) {
                 },
             })
             .then((response) => {
+                if(inputValue != "clearlogs") {
                 // Add the bot's response to the conversation history using the ref
                 conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
                 const r = "assistant";
@@ -145,6 +146,7 @@ export default function Copilot({ editorContent }) {
                     { type: "bot", message: response.data.choices[0].message.content },
                 ]);
                 //}
+            }
 
                 setIsLoading(false);
             })
