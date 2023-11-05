@@ -1,16 +1,39 @@
-import React, { useState } from "react";
-import Editor from "@monaco-editor/react";
+import Editor, { monaco } from "@monaco-editor/react";
+import React, { useState, useEffect } from "react";
+import "./CodeEditorWindow.css";
 
-const CodeEditorWindow = ({handleEditorContentChange, onChange, language, code, theme}) => {
+const CodeEditorWindow = ({
+  handleEditorContentChange,
+  onChange,
+  language,
+  code,
+  theme,
+}) => {
   const [value, setValue] = useState(code || "");
 
-
   const handleEditorChange = (value) => {
-    // const editorContent = value
     setValue(value);
-    handleEditorContentChange(value); // Notify the parent component about changes in the editor content
+    handleEditorContentChange(value);
     onChange("code", value);
   };
+
+  const handleEditorMount = (editor, monaco) => {
+    let decorations = []; // Store decoration ids
+  
+    editor.onDidChangeModelContent(() => {
+      // Remove previous decorations
+      decorations = editor.deltaDecorations(decorations, []);
+  
+      // Add new decorations
+      decorations = editor.deltaDecorations([], [
+        {
+          range: new monaco.Range(2, 1, 2, Number.MAX_VALUE),
+          options: { inlineClassName: "myInlineDecoration" },
+        },
+      ]);
+    });
+  };
+  
 
   return (
     <div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
@@ -22,8 +45,10 @@ const CodeEditorWindow = ({handleEditorContentChange, onChange, language, code, 
         theme={theme}
         defaultValue="// some comment"
         onChange={handleEditorChange}
+        onMount={handleEditorMount}
       />
     </div>
   );
 };
+
 export default CodeEditorWindow;

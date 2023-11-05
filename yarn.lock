@@ -1767,7 +1767,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*", "@types/react@16.9.34":
+"@types/react@*", "@types/react@>=16 <= 18", "@types/react@16.9.34":
   "version" "16.9.34"
   dependencies:
     "@types/prop-types" "*"
@@ -6450,13 +6450,20 @@
   "resolved" "https://registry.npmjs.org/mkdirp/-/mkdirp-1.0.4.tgz"
   "version" "1.0.4"
 
-"monaco-editor@>= 0.21.0 < 1", "monaco-editor@>= 0.25.0 < 1":
-  "version" "0.44.0"
+"monaco-editor@^0.39.0", "monaco-editor@>= 0.21.0 < 1", "monaco-editor@>= 0.25.0 < 1":
+  "integrity" "sha512-zhbZ2Nx93tLR8aJmL2zI1mhJpsl87HMebNBM6R8z4pLfs8pj604pIVIVwyF1TivcfNtIPpMXL+nb3DsBmE/x6Q=="
+  "resolved" "https://registry.npmjs.org/monaco-editor/-/monaco-editor-0.39.0.tgz"
+  "version" "0.39.0"
 
 "monaco-themes@^0.4.1":
   "version" "0.4.1"
   dependencies:
     "fast-plist" "^0.1.2"
+
+"monaco@^1.201704190613.0":
+  "integrity" "sha512-xcQUOfa7inJdhOjHmwxILMIyPk4nl80E9AVvwyz5PUC2uEbxSjNUR9tjEIUxR+rR5o0xe64lqsIpChSzu8YMOQ=="
+  "resolved" "https://registry.npmjs.org/monaco/-/monaco-1.201704190613.0.tgz"
+  "version" "1.201704190613.0"
 
 "ms@^2.0.0", "ms@^2.1.1", "ms@2.1.2":
   "version" "2.1.2"
@@ -7672,6 +7679,13 @@
 "react-is@^18.0.0":
   "version" "18.2.0"
 
+"react-monaco-editor@^0.54.0":
+  "integrity" "sha512-9JwO69851mfpuhYLHlKbae7omQWJ/2ICE2lbL0VHyNyZR8rCOH7440u+zAtDgiOMpLwmYdY1sEZCdRefywX6GQ=="
+  "resolved" "https://registry.npmjs.org/react-monaco-editor/-/react-monaco-editor-0.54.0.tgz"
+  "version" "0.54.0"
+  dependencies:
+    "prop-types" "^15.8.1"
+
 "react-pro-sidebar@^1.1.0-alpha.1":
   "version" "1.1.0-alpha.1"
   dependencies:
@@ -7774,7 +7788,7 @@
 "react-type-animation@^3.2.0":
   "version" "3.2.0"
 
-"react@*", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^17.0.2", "react@<18.0.0", "react@>= 15.0.0", "react@>= 16", "react@>=16", "react@>=16.3", "react@>=16.6.0", "react@>=16.8", "react@>=16.8.0", "react@17.0.2":
+"react@*", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^17.0.2", "react@<18.0.0", "react@>= 15.0.0", "react@>= 16", "react@>=16", "react@>=16 <= 18", "react@>=16.3", "react@>=16.6.0", "react@>=16.8", "react@>=16.8.0", "react@17.0.2":
   "version" "17.0.2"
   dependencies:
     "loose-envify" "^1.1.0"

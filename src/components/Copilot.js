@@ -19,17 +19,40 @@ export default function Copilot({ editorContent }) {
     const [logs, setLogs] = useState("")
     const [loading, setLoading] = useState(true)
 
-    const conversationRef = React.useRef([{ role: "system", content: "You are the Harvest AI help assistant whose job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise." }]);
+    const conversationRef = React.useRef([{ role: "system", content: "You are the Harvest AI help assistant whose job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role and ask me about the task I am working on. Please be concise." }]);
+    
+    const [counter, setCounter] = useState(0);
+
+    const evaluateState = (currentCodeState, logs) => {
+        const prefix = "1) Given the current code: ";
+        const newline = "\n";
+        const iterim = "2) And the original task intended by me (the user) and the code progress detailed in logs and previous session history: ";
+        const task = "3) Please reccomend whether or not I am on the right track to achieve their desired functionality. Please *LIST SPECIFIC LINE NUMBERS* I may consider changing for better results.";
+        const concise = "Please be very concise."
+        let query = prefix + newline + currentCodeState + iterim + logs + newline + newline + task + newline + concise;
+        return query
+    }
     
     useEffect(() => {
         // When the editor content changes, update the inputValue state
         currentCodeState = editorContent;
         // add conditions here based on parsing code content to make suggestions
+        if(counter >= 100) {
+            setCounter(0);
+            //const flag = "add to chat log";
+            const r = "user";
+            const q = evaluateState(currentCodeState, logs);
+            conversationRef.current.push({role: r, content: q});
+            const flag = 0;
+            sendMessage(conversationRef.current, flag);
+            return;
+        }
         if (sendIntroduction) {
             sendMessage(conversationRef.current);
             sendIntroduction = false;
         }
         fetchLogs()
+        setCounter(counter + 1);
     }, [editorContent]);
 
     // Fetch all Logs
@@ -81,7 +104,7 @@ export default function Copilot({ editorContent }) {
         let contextIntro = "Here is some context from previous chat session that might be helpful: "
         let codeIntro = "Here is my current code: ";
         let newline = "\n";
-        let conciseRequest = "Please be concise in your response.";
+        let conciseRequest = "Please be very concise in your response.";
         let message = contextIntro + newline + logs + newline + newline + codeIntro + newline + currentCodeState + 
                       newline + newline + userQuery + newline + conciseRequest;
         return message;
@@ -94,12 +117,13 @@ export default function Copilot({ editorContent }) {
 
         //const flag = "add to chat log";
         const r = "user";
+        const clearLogs = "clearlogs";
+        const flag = 0 | (inputValue == clearLogs); //(inputValue == "clearlogs") always supress output
         const q = buildQuery(inputValue, logs);
         conversationRef.current.push({role: r, content: q});
-        sendMessage(conversationRef.current, inputValue);
+        sendMessage(conversationRef.current, flag);
         setInputValue("");
 
-        const clearLogs = "clearlogs";
         if(inputValue === clearLogs) {
             handleLogReset();
         } else {
@@ -109,16 +133,9 @@ export default function Copilot({ editorContent }) {
         
     };
 
-    const sendMessage = (message, inputValue) => {
+    const sendMessage = (message, flag) => {
         const url = "https://api.openai.com/v1/chat/completions";
         const apiKey = "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"; // Your OpenAI API key
-
-        // Include user context using the ref
-        // const preface = "Here is my current code: ";
-        // const newline = "\n";
-        // const postfix = "Please be concise in your reponse.";
-        // let final = preface + newline + currentCodeState + newline + message + newline + postfix;
-        //conversationRef.current.push({ role: "user", content: final });
         const data = {
             model: "gpt-3.5-turbo-0301",
             messages: message // Pass the entire conversation history here
@@ -134,19 +151,17 @@ export default function Copilot({ editorContent }) {
                 },
             })
             .then((response) => {
-                if(inputValue !== 'clearlogs') {
-                    // Add the bot's response to the conversation history using the ref
+                if(!flag) {
                     conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
                     const r = "assistant";
                     const q = response.data.choices[0].message.content;
+                    handleLogReset();
                     handleLogCreate(r, q);
-                    //if (flag == "add to chat log") {
                     setChatLog((prevChatLog) => [
                         ...prevChatLog,
                         { type: "bot", message: response.data.choices[0].message.content },
                     ]);
                 }
-                //}
 
                 setIsLoading(false);
             })
