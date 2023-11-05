@@ -16,7 +16,7 @@ export default function Copilot({ editorContent }) {
     const [chatLog, setChatLog] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const [logs, setLogs] = useState([])
+    const [logs, setLogs] = useState("")
     const [loading, setLoading] = useState(true)
 
     const conversationRef = React.useRef([{ role: "system", content: "You are the Harvest AI help assistant whose job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise." }]);
@@ -29,12 +29,8 @@ export default function Copilot({ editorContent }) {
             sendMessage(conversationRef.current);
             sendIntroduction = false;
         }
-    }, [editorContent]);
-
-    // Fetch all books on initial render
-    useEffect(() => {
         fetchLogs()
-    }, [])
+    }, [editorContent]);
 
     // Fetch all Logs
     const fetchLogs = async () => {
@@ -43,10 +39,10 @@ export default function Copilot({ editorContent }) {
         .get('http://localhost:4001/logs/all')
         .then(response => {
             // Update the books state
-            setLogs(response.data)
-            console.log(response.data)
+            setLogs(JSON.stringify(response.data));
+            console.log(response.data);
             // Update loading state
-            setLoading(false)
+            setLoading(false);
         })
         .catch(error => console.error(`There was an error retrieving the book list: ${error}`))
     }
@@ -60,7 +56,7 @@ export default function Copilot({ editorContent }) {
         message: me,
       })
       .then(res => {
-        console.log(res.data)
+        console.log(res.data);
 
         // Fetch all books to refresh
         // the books on the bookshelf list
@@ -81,11 +77,13 @@ export default function Copilot({ editorContent }) {
         .catch(error => console.error(`There was an error resetting the logs: ${error}`))
     }
 
-    const buildQuery = (userQuery) => {
+    const buildQuery = (userQuery, logContext) => {
+        let contextIntro = "Here is some context from previous chat session that might be helpful: "
         let codeIntro = "Here is my current code: ";
         let newline = "\n";
         let conciseRequest = "Please be concise in your response.";
-        let message = codeIntro + newline + currentCodeState + newline + userQuery + newline + conciseRequest;
+        let message = contextIntro + newline + logContext + newline + newline + codeIntro + newline + currentCodeState + 
+                      newline + newline + userQuery + newline + conciseRequest;
         return message;
     }
 
@@ -96,14 +94,13 @@ export default function Copilot({ editorContent }) {
 
         //const flag = "add to chat log";
         const r = "user";
-        const q = buildQuery(inputValue);
+        const q = buildQuery(inputValue, logs);
         conversationRef.current.push({role: r, content: q});
         sendMessage(conversationRef.current);
         setInputValue("");
 
         const clearLogs = "clearlogs"
         if(inputValue == clearLogs) {
-            console.log("TEST PASSED")
             handleLogReset(r, q);
         } else {
             handleLogCreate(r, q);
