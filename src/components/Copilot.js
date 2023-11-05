@@ -19,10 +19,10 @@ export default function Copilot({ editorContent, dataContent }) {
 
     const [logs, setLogs] = useState("")
     const [loading, setLoading] = useState(true)
+    const [counter, setCounter] = useState(0);
 
     const conversationRef = React.useRef([{ role: "system", content: "You are the Harvest AI help assistant. Your job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise. When answering future questions, you do not need to reintroduce yourself." }]);
-    
-    const [counter, setCounter] = useState(0);
+    const conversationWithContextRef = React.useRef([{ role: "", content: "" }]);
 
     const evaluateState = (currentCodeState, logs) => {
         const prefix = "1) Given the current code: ";
@@ -82,7 +82,6 @@ export default function Copilot({ editorContent, dataContent }) {
         .then(response => {
             // Update the books state
             setLogs(JSON.stringify(response.data))
-            console.log(response.data)
             // Update loading state
             setLoading(false)
         })
@@ -90,12 +89,11 @@ export default function Copilot({ editorContent, dataContent }) {
     }
 
     // Create new log
-    const handleLogCreate = (rl, me) => {
+    const handleLogCreate = (logToStore) => {
     // Send POST request to 'books/create' endpoint
     axios
       .post('http://localhost:4001/logs/create', {
-        role: rl,
-        message: me,
+        session_content: logToStore,
       })
       .then(res => {
         console.log(res.data)
@@ -107,6 +105,34 @@ export default function Copilot({ editorContent, dataContent }) {
       .catch(error => console.error(`There was an error creating the log: ${error}`))
     }
 
+    // Delete single entry
+    const handleLogDelete = (idToDel) => {
+    // Send POST request to 'books/create' endpoint
+    axios
+        .put('http://localhost:4001/logs/delete', {
+        id: idToDel,
+        })
+        .then(res => {
+
+        // Fetch all books to refresh
+        // the books on the bookshelf list
+        fetchLogs()
+        })
+        .catch(error => console.error(`There was an error creating the log: ${error}`))
+    }
+
+    // Reset log list (remove all logs)
+    const handleLogDeleteAll = () => {
+        // Send PUT request to 'books/reset' endpoint
+        axios.put('http://localhost:4001/logs/deleteAll')
+        .then(() => {
+        // Fetch all books to refresh
+        // the books on the bookshelf list
+        // fetchLogs()
+        })
+        .catch(error => console.error(`There was an error deleting the logs: ${error}`))
+    }
+
     // Reset log list (remove all books)
     const handleLogReset = () => {
         // Send PUT request to 'books/reset' endpoint
@@ -116,17 +142,23 @@ export default function Copilot({ editorContent, dataContent }) {
         // the books on the bookshelf list
         fetchLogs()
         })
-        .catch(error => console.error(`There was an error resetting the logs: ${error}`))
+        .catch(error => console.error(`There was an error deleting the logs: ${error}`))
     }
 
-    const buildQuery = (userQuery, logs) => {
-        let contextIntro = "Here is some context from previous chat sessions that might be helpful: "
+    // DOES NOT USE LOGS RIGHT NOW
+    const buildQuery = (userQuery) => {
         let codeIntro = "Here is my current code: ";
         let newline = "\n";
         let conciseRequest = "Please be very concise in your response.";
-        let message = contextIntro + newline + logs + newline + newline + codeIntro + newline + currentCodeState + 
+        let message =  codeIntro + newline + currentCodeState + 
                       newline + newline + userQuery + newline + conciseRequest;
         return message;
+    }
+
+    const addContext = (query, logs) => {
+        let contextSuffix = "Here is some context from previous sessions that might be helpful: ";
+        let newline = "\n";
+        return query + newline + contextSuffix + newline + logs;
     }
 
     const handleSubmit = (event) => {
@@ -138,16 +170,20 @@ export default function Copilot({ editorContent, dataContent }) {
         const r = "user";
         const clearLogs = "clearlogs";
         const flag = 0 | (inputValue == clearLogs); //(inputValue == "clearlogs") always supress output
-        const q = buildQuery(inputValue, logs);
+        const q = buildQuery(inputValue);
+        const qWithContext = addContext(q, logs);
+        // maintain memory for without contex tand with context
         conversationRef.current.push({role: r, content: q});
-        sendMessage(conversationRef.current, flag);
-        setInputValue("");
+        conversationWithContextRef.current = [{role: r, content: qWithContext}];
 
-        if(inputValue === clearLogs) {
-            handleLogReset();
-        } else {
-            handleLogCreate(r, q);
+        sendMessage(conversationWithContextRef.current, flag);
+
+        // error handling to manually call LogsReset
+        if(inputValue == clearLogs) {
+            handleLogDeleteAll();
         }
+
+        setInputValue("");
 
     };
 
@@ -173,8 +209,6 @@ export default function Copilot({ editorContent, dataContent }) {
                     conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
                     const r = "assistant";
                     const q = response.data.choices[0].message.content;
-                    handleLogReset();
-                    handleLogCreate(r, q);
                     setChatLog((prevChatLog) => [
                         ...prevChatLog,
                         { type: "bot", message: response.data.choices[0].message.content },
@@ -187,7 +221,31 @@ export default function Copilot({ editorContent, dataContent }) {
                 setIsLoading(false);
                 console.log(error);
             });
+        handleLogReset();
     };
+
+
+    // save session before unload
+    const handleBeforeUnload = (event) => {
+        event.preventDefault();
+        const concatenatedString = conversationRef.current.reduce((acc, item) => {
+            return acc + item.role + ': ' + item.content + ', ';
+            }, '');
+        console.log("Current conversation = " + concatenatedString);
+        handleLogCreate(concatenatedString);
+        handleLogReset();
+        event.returnValue = '';
+      };
+
+    // listen for unload
+    useEffect(() => {
+        fetchLogs()
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []); // The empty dependency array ensures it runs only once when the component mounts
+      
 
     return (
         <div className="container mx-auto max-w-[700px]">
