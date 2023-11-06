@@ -21,7 +21,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route
-            path='/:id'
+            path='/:id?'
             element={<Landing dataContent={dataContent} />} />
           <Route
             path='/datasets'

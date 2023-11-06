@@ -23,10 +23,6 @@ export default function Copilot({ editorContent, dataContent, idFromLanding}) {
     const [loading, setLoading] = useState(true)
     const [counter, setCounter] = useState(0);
 
-    /*const [name, setName] = useState("");
-    const [task, setTask] = useState("");
-    const [context, setContext] = useState("");
-    const [id, setId] = useState(1);*/
     const [isLoadingInit, setIsLoadingInit] = useState(true);
     const conversationRef = React.useRef([{ role: "system", content: "" }]);
     const conversationWithContextRef = React.useRef([{ role: "system", content: "" }]);
