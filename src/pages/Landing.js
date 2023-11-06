@@ -16,6 +16,7 @@ import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileCode, faFileExcel } from '@fortawesome/free-regular-svg-icons';
+import { useParams } from "react-router-dom";
 
 // const javascriptDefault = `/**
 // * Problem: Binary Search: Search a sorted array for a target value.
@@ -61,6 +62,8 @@ export default function Landing({dataContent}) {
 
   const enterPress = useKeyPress("Enter");
   const ctrlPress = useKeyPress("Control");
+
+  const {id} = useParams();
 
   const onSelectChange = (sl) => {
     console.log("selected Option...", sl);
@@ -246,6 +249,7 @@ export default function Landing({dataContent}) {
           <Copilot
             editorContent={editorContent}
             dataContent={dataContent}
+            idFromLanding={id}
           />
         </div>
       </div>

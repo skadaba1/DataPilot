@@ -34,5 +34,20 @@ router.put('/deleteAll', logsRoutes.logsDeleteAll)
 // this means that '/reset' translates to '/books/reset'
 router.put('/reset', logsRoutes.logsReset)
 
+// Add route for Get request one log
+// In server.js, books route is specified as '/books'
+// this means that '/reset' translates to '/books/reset'
+router.get('/last', logsRoutes.fetchLatestEntry)
+
+// Add route for Put request one log update
+// In server.js, books route is specified as '/books'
+// this means that '/reset' translates to '/books/reset'
+router.put('/update', logsRoutes.updateEntry)
+
+// Add route for Put request one log update
+// In server.js, books route is specified as '/books'
+// this means that '/reset' translates to '/books/reset'
+router.get('/one', logsRoutes.fetchOne)
+
 // Export router
 module.exports = router

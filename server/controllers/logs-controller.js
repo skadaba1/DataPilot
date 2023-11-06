@@ -25,6 +25,8 @@ exports.logsCreate = async (req, res) => {
   knex('Logs')
     .insert({ // insert new record, a book
       'session_content': req.body.session_content,
+      'name': req.body.name,
+      'task': req.body.task,
     })
     .then(() => {
       // Send a success message in response
@@ -76,6 +78,7 @@ exports.logsReset = async (req, res) => {
   try {
     // Get the count of rows in the 'Logs' table
     const rowCount = await knex('Logs').count('* as count').first();
+    
     // If the count exceeds 10, calculate the number of entries to delete
     if (rowCount.count > 10) {
       const deleteCount = rowCount.count - 10;
@@ -99,3 +102,60 @@ exports.logsReset = async (req, res) => {
     res.json({ message: `There was an error resetting log list: ${error}.` });
   }
 }
+
+// Update an entry with the specified ID
+exports.updateEntry = async (req, res) => {
+  try {
+    // Update the entry with the specified ID in the 'Logs' table
+    await knex('Logs')
+      .where('id', req.body.id)
+      .update({
+        session_content: req.body.session_content,
+        name: req.body.name,
+        task: req.body.task,
+      });
+
+    // Send a success message in response
+    res.json({ message: `Entry with ID ${req.body.id} updated.` });
+  } catch (error) {
+    // Send an error message in response
+    res.json({ message: `There was an error updating the entry: ${error}` });
+  }
+}
+
+// Fetch the most recently added entry
+exports.fetchLatestEntry = async (req, res) => {
+  try {
+    // Get the most recently added entry from the 'Logs' table
+    const latestEntry = await knex('Logs')
+      .select('id', '*') 
+      .orderBy('id', 'desc')
+      .first();
+
+    // Send the latest entry in the response
+    res.json(latestEntry);
+  } catch (error) {
+    // Send an error message in response
+    res.json({ message: `There was an error retrieving the latest entry: ${error}` });
+  }
+}
+
+// Fetch the most recently added entry
+exports.fetchOne = async (req, res) => {
+  try {
+    // Get the most recently added entry from the 'Logs' table
+    const entry = await knex('Logs')
+      .where('id', req.query.id)
+      .first() // Get the first matching entry
+      .select('id', '*'); // Include all columns here
+
+    // Send the latest entry in the response
+    res.json(entry);
+  } catch (error) {
+    // Send an error message in response
+    res.json({ message: `There was an error retrieving the selected entry: ${error}` });
+  }
+}
+
+
+

@@ -9,10 +9,12 @@ import { TypeAnimation } from 'react-type-animation';
 let currentCodeState = "";
 let currentDataContent = "";
 let sendIntroduction = true;
-export default function Copilot({ editorContent, dataContent }) {
-
+let task = "";
+let context = "";
+let name = "";
+//et id = null;
+export default function Copilot({ editorContent, dataContent, idFromLanding}) {
     // editorContent is current user code 
-
     const [inputValue, setInputValue] = useState("");
     const [chatLog, setChatLog] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -21,38 +23,80 @@ export default function Copilot({ editorContent, dataContent }) {
     const [loading, setLoading] = useState(true)
     const [counter, setCounter] = useState(0);
 
-    const conversationRef = React.useRef([{ role: "system", content: "You are the Harvest AI help assistant. Your job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise. When answering future questions, you do not need to reintroduce yourself." }]);
-    const conversationWithContextRef = React.useRef([{ role: "", content: "" }]);
+    /*const [name, setName] = useState("");
+    const [task, setTask] = useState("");
+    const [context, setContext] = useState("");
+    const [id, setId] = useState(1);*/
+    const [isLoadingInit, setIsLoadingInit] = useState(true);
+    const conversationRef = React.useRef([{ role: "system", content: "" }]);
+    const conversationWithContextRef = React.useRef([{ role: "system", content: "" }]);
 
-    const evaluateState = (currentCodeState, logs) => {
+    // Fetch last log
+    const fetchOne = async () => {
+        try {
+        const response = await axios.get(`http://localhost:4001/logs/one?id=${idFromLanding}`);
+        task = response.data.task;
+        name = response.data.name;
+
+        const initInstruction =
+            "You are the Harvest AI help assistant. \n " +
+            "Here is some context from a previous " +
+            "conversation that may be helpful (it may be empty): " +
+            JSON.stringify(response.data.session_content)
+             + " \n The task I am trying to accomplish this session is: " +
+             JSON.stringify(response.data.task) +
+             "\n";
+        conversationRef.current = [
+            ...conversationRef.current,
+            { role: "system", content: initInstruction },
+        ];
+
+        if (sendIntroduction) {
+            sendMessage(conversationRef.current);
+            sendIntroduction = false;
+        }
+
+        } catch (error) {
+        console.error(`There was an error retrieving the last log: ${error}`);
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+        try {
+            await fetchOne();
+            setIsLoadingInit(false);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        };
+        fetchData();
+    }, []);
+   
+
+    const evaluateState = (currentCodeState, context, task) => {
         const prefix = "1) Given the current code: ";
         const newline = "\n";
         const iterim = "2) And the original task intended by me (the user) and the code progress detailed in logs and previous session history: ";
-        const task = "3) Please reccomend whether or not I am on the right track to achieve their desired functionality. Please *LIST SPECIFIC LINE NUMBERS* I may consider changing for better results.";
+        const instruct = "3) Please reccomend whether or not I am on the right track to achieve their desired functionality. Please *LIST SPECIFIC LINE NUMBERS* I may consider changing for better results.";
         const concise = "Please be very concise."
-        let query = prefix + newline + currentCodeState + iterim + logs + newline + newline + task + newline + concise;
+        let query = prefix + newline + currentCodeState + iterim + context + newline + "My task is to: " + task + newline + instruct + concise;
         return query
     }
     
     // for when the editor content changes
     useEffect(() => {
         currentCodeState = editorContent;
-        if (sendIntroduction) {
-            sendMessage(conversationRef.current);
-            sendIntroduction = false;
-        }
         // add conditions here based on parsing code content to make suggestions
         if(counter >= 100) {
             setCounter(0);
             //const flag = "add to chat log";
-            const r = "user";
-            const q = evaluateState(currentCodeState, logs);
-            conversationRef.current.push({role: r, content: q});
+            const q = evaluateState(currentCodeState, context, task);
+            conversationRef.current.push({role: "user", content: q});
             const flag = 0;
             sendMessage(conversationRef.current, flag);
             return;
         }
-        fetchLogs()
         setCounter(counter + 1);
     }, [editorContent]);
 
@@ -81,19 +125,42 @@ export default function Copilot({ editorContent, dataContent }) {
         .get('http://localhost:4001/logs/all')
         .then(response => {
             // Update the books state
-            setLogs(JSON.stringify(response.data))
+            setLogs(JSON.stringify(response.data.session_content))
             // Update loading state
             setLoading(false)
         })
         .catch(error => console.error(`There was an error retrieving the book list: ${error}`))
     }
 
+    // Fetch all Logs
+    const handleUpdate = (new_content) => {
+        // Send GET request to 'books/one' endpoint
+        axios
+        .put('http://localhost:4001/logs/update', {
+            id: idFromLanding,
+            session_content: new_content, 
+            task: task, 
+            name: name,
+        })
+        .then(response => {
+            // Update the books state
+            console.log(JSON.stringify(response));
+            /*setName(JSON.stringify(response.data.name))
+            setTask(JSON.stringify(response.data.task))
+            setContext(JSON.stringify(response.session_content))
+            setId(response.id)*/
+        })
+        .catch(error => console.error(`There was an error updating the logs: ${error}`))
+    }
+
     // Create new log
-    const handleLogCreate = (logToStore) => {
+    const handleLogCreate = (logToStore, task, name) => {
     // Send POST request to 'books/create' endpoint
     axios
       .post('http://localhost:4001/logs/create', {
         session_content: logToStore,
+        name: name, 
+        task: task,
       })
       .then(res => {
         console.log(res.data)
@@ -128,18 +195,6 @@ export default function Copilot({ editorContent, dataContent }) {
         .then(() => {
         // Fetch all books to refresh
         // the books on the bookshelf list
-        // fetchLogs()
-        })
-        .catch(error => console.error(`There was an error deleting the logs: ${error}`))
-    }
-
-    // Reset log list (remove all books)
-    const handleLogReset = () => {
-        // Send PUT request to 'books/reset' endpoint
-        axios.put('http://localhost:4001/logs/reset')
-        .then(() => {
-        // Fetch all books to refresh
-        // the books on the bookshelf list
         fetchLogs()
         })
         .catch(error => console.error(`There was an error deleting the logs: ${error}`))
@@ -155,10 +210,10 @@ export default function Copilot({ editorContent, dataContent }) {
         return message;
     }
 
-    const addContext = (query, logs) => {
-        let contextSuffix = "Here is some context from previous sessions that might be helpful: ";
+    const addContext = (query, context) => {
+        let contextSuffix = "Here is some context from my previous sessions that might be helpful: ";
         let newline = "\n";
-        return query + newline + contextSuffix + newline + logs;
+        return query + newline + contextSuffix + newline + context;
     }
 
     const handleSubmit = (event) => {
@@ -171,7 +226,7 @@ export default function Copilot({ editorContent, dataContent }) {
         const clearLogs = "clearlogs";
         const flag = 0 | (inputValue == clearLogs); //(inputValue == "clearlogs") always supress output
         const q = buildQuery(inputValue);
-        const qWithContext = addContext(q, logs);
+        const qWithContext = addContext(q, context);
         // maintain memory for without contex tand with context
         conversationRef.current.push({role: r, content: q});
         conversationWithContextRef.current = [{role: r, content: qWithContext}];
@@ -221,32 +276,19 @@ export default function Copilot({ editorContent, dataContent }) {
                 setIsLoading(false);
                 console.log(error);
             });
-        handleLogReset();
-    };
-
-
-    // save session before unload
-    const handleBeforeUnload = (event) => {
-        event.preventDefault();
         const concatenatedString = conversationRef.current.reduce((acc, item) => {
             return acc + item.role + ': ' + item.content + ', ';
             }, '');
         console.log("Current conversation = " + concatenatedString);
-        handleLogCreate(concatenatedString);
-        handleLogReset();
-        event.returnValue = '';
-      };
+        handleUpdate(concatenatedString);
+    };
 
-    // listen for unload
-    useEffect(() => {
-        fetchLogs()
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => {
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
-    }, []); // The empty dependency array ensures it runs only once when the component mounts
-      
 
+    if(isLoadingInit) {
+        return (
+            <div>Loading...</div>
+        )
+    }
     return (
         <div className="container mx-auto max-w-[700px]">
             <div className="flex flex-col h-screen bg-gray-900" style={{ maxHeight: "85vh", backgroundColor: "#e9e9e9" }}>

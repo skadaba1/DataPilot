@@ -30,6 +30,8 @@ knex.schema
         return knex.schema.createTable('Logs', (table)  => {
           table.increments('id').primary()
           table.string('session_content')
+          table.string('name')
+          table.string('task')
         })
         .then(() => {
           // Log success message
