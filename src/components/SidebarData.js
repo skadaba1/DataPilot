@@ -22,5 +22,11 @@ export const SidebarData = [
         path: '/datasets',
         icon: <BsIcons.BsDatabaseFillGear />,
         cName: 'nav-text'
+    },
+    {
+        title: 'Sessions',
+        path: '/sessions',
+        icon: <BsIcons.BsFillCollectionFill />,
+        cName: 'nav-text'
     }
 ];

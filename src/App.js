@@ -1,10 +1,11 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing.js';
 import DatasetsPage from './pages/DatasetsPage.js';
 import SpreadsheetPage from './pages/SpreadsheetPage.js';
+import SessionsPage from './pages/SessionsPage.js';
 
 function App() {
 
@@ -19,15 +20,18 @@ function App() {
       <Router>
         <Navbar />
         <Routes>
-          <Route 
-          path='/' 
-          element={<Landing dataContent = {dataContent}/>} />
-          <Route 
-          path='/datasets' 
-          element = {<DatasetsPage onFileUploadNotifyApp = {handleFileUploadApp}/>} />
-          <Route 
-          path='/spreadsheet' 
-          element={<SpreadsheetPage />} />
+          <Route
+            path='/'
+            element={<Landing dataContent={dataContent} />} />
+          <Route
+            path='/datasets'
+            element={<DatasetsPage onFileUploadNotifyApp={handleFileUploadApp} />} />
+          <Route
+            path='/spreadsheet'
+            element={<SpreadsheetPage />} />
+          <Route
+            path='/sessions'
+            element={<SessionsPage />} />
         </Routes>
       </Router>
     </>
