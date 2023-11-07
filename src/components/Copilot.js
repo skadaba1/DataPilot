@@ -242,7 +242,6 @@ export default function Copilot({ editorContent, idFromLanding }) {
             .then((response) => {
                 if(!flag) {
                     conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
-                    conversationPersistent = conversationRef.current;
                     const r = "assistant";
                     const q = response.data.choices[0].message.content;
                     const newChat = {type: "bot", message: response.data.choices[0].message.content};
