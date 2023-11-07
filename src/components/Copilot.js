@@ -39,13 +39,13 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
         name = response.data.name;
 
         const initInstruction =
-            "You are Bo, the Harvest AI help assistant. Your job is to help me, a data analyst, with my workflow. Please greet me and tell me your role. Please be concise. When answering future questions, you do not need to reintroduce yourself.\n" +
-            "Here is some context from a previous " +
-            "conversation that may be helpful (it may be empty): " +
-            JSON.stringify(response.data.session_content)
-             + " \n The task I am trying to accomplish this session is: " +
-             JSON.stringify(response.data.task) +
-             "\n";
+            "You are Bo, the Harvest AI help assistant. Your job is to help me, a data analyst, with my workflow. Please greet me and tell me your role. Please be concise. When answering future questions, you do not need to reintroduce yourself.\n" 
+            //+ "Here is some context from a previous " +
+            //"conversation that may be helpful (it may be empty): " +
+            //JSON.stringify(response.data.session_content)
+             //+ " \n The task I am trying to accomplish this session is: " +
+             //JSON.stringify(response.data.task) +
+             //"\n";
         conversationRef.current = [
             ...conversationRef.current,
             { role: "system", content: initInstruction },
@@ -80,7 +80,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
         const iterim = "2) And the original task intended by me (the user) and the code progress detailed in logs and previous session history: ";
         const instruct = "3) Please reccomend whether or not I am on the right track to achieve their desired functionality. Please *LIST SPECIFIC LINE NUMBERS* I may consider changing for better results.";
         const concise = "Please be very concise."
-        let query = prefix + newline + currentCodeState + iterim + context + newline + "My task is to: " + task + newline + instruct + concise;
+        let query = prefix + newline + currentCodeState + newline + context + newline + "My task is to: " + task + newline + instruct + concise;
         return query
     }
     
@@ -105,7 +105,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
 
     const buildNewDatasetQuery = (dataset) => {
         let intro = "Here is a new dataset named " + dataset[0];
-        let prompt = "When you receive it, please tell me 'I reviewed your new dataset', followed by the dataset's name. Then, provide me with a summary of the dataset. Please be concise in your response."
+        let prompt = "When you receive it, please tell me 'I reviewed your new dataset', followed by the dataset's name. Then, provide me with a 1 sentence summary of the dataset. Describe any missing data or basic patterns. Please be concise in your response."
         let newline = "\n";
         return intro + newline + dataset[1] + newline + prompt;
     }
@@ -208,7 +208,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
 
     // DOES NOT USE LOGS RIGHT NOW
     const buildQuery = (userQuery) => {
-        let intro = "First, I am going to give you my code. Then, I am going to give you my datasets. Then, I am going to ask you a question."
+        let intro = "First, I am going to give you my code. Then, I am going to ask you a question."
         let codeIntro = "Here is my current code: ";
         let newline = "\n";
         let conciseRequest = "Please be very concise in your response.";
@@ -218,11 +218,12 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
             datasetsQuery += newline + "Its contents are: " + newline + dataset[1];
         });
         let message =  intro  + newline + codeIntro + newline + editorContent + 
-                      newline + newline + datasetsQuery + newline + newline + userQuery + newline + conciseRequest;
+                      newline + newline + userQuery + newline + conciseRequest;
         return message;
     }
 
     const addContext = (query, context) => {
+        return "";
         let contextSuffix = "Here is some context from my previous sessions that might be helpful: ";
         let newline = "\n";
         return query + newline + contextSuffix + newline + context;
@@ -245,7 +246,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
         conversationRef.current.push({role: r, content: q});
         conversationWithContextRef.current = [{role: r, content: qWithContext}];
 
-        sendMessage(conversationWithContextRef.current, flag);
+        sendMessage(conversationRef.current, flag);
 
         // error handling to manually call LogsReset
         if(inputValue == clearLogs) {
@@ -258,7 +259,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
 
     const sendMessage = (message, flag) => {
         const url = "https://api.openai.com/v1/chat/completions";
-        const apiKey = "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"; // Your OpenAI API key
+        const apiKey = "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"; // Your OpenAI API key
         const data = {
             model: "gpt-3.5-turbo-0301",
             messages: message // Pass the entire conversation history here
@@ -284,6 +285,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
                         newChat,
                     ]);
                     chatLogPersistent = [...chatLogPersistent, newChat];
+                    console.log(newChat);
                 }
 
                 setIsLoading(false);
