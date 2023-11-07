@@ -218,7 +218,6 @@ export default function Landing({datasets, setDatasets, onSetId}) {
       progress: undefined,
     });
   };
-  console.log("landing.js: rendering copilot.js with datasets:", datasets);
   return (
     <>
       <ToastContainer

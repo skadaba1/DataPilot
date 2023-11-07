@@ -2,9 +2,7 @@ import Editor, { monaco } from "@monaco-editor/react";
 import React, { useState, useEffect } from "react";
 import "./CodeEditorWindow.css";
 
-let editorContentPersistent = `/* Harvest AI editor. Write your code here. */
-print("Hello World")
-`;
+let editorContentPersistent = `/* Harvest AI editor. Write your code here. */`;
 
 const CodeEditorWindow = ({
   handleEditorContentChange,

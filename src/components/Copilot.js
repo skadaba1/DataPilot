@@ -224,7 +224,7 @@ export default function Copilot({ editorContent, idFromLanding }) {
     const sendMessage = (message, flag) => {
         console.log("MESSAGE = " + JSON.stringify(message));
         const url = "https://api.openai.com/v1/chat/completions";
-        const apiKey = "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"; // Your OpenAI API key
+        const apiKey = "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"; // Your OpenAI API key
         const data = {
             model: "gpt-3.5-turbo-0301",
             messages: message // Pass the entire conversation history here
@@ -242,6 +242,7 @@ export default function Copilot({ editorContent, idFromLanding }) {
             .then((response) => {
                 if(!flag) {
                     conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
+                    conversationPersistent = conversationRef.current;
                     const r = "assistant";
                     const q = response.data.choices[0].message.content;
                     const newChat = {type: "bot", message: response.data.choices[0].message.content};

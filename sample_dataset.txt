@@ -1,7 +1,0 @@
-today's price | weather | yesterday's price
-1 | cloudy | 1
-2 | sunny | 1
-4 | cloudy | 2
-4 | sunny | 2
-9 | cloudy | 3
-6 | sunny | 3
