@@ -2,6 +2,10 @@ import Editor, { monaco } from "@monaco-editor/react";
 import React, { useState, useEffect } from "react";
 import "./CodeEditorWindow.css";
 
+let editorContentPersistent = `/* Harvest AI editor. Write your code here. */
+print("Hello World")
+`;
+
 const CodeEditorWindow = ({
   handleEditorContentChange,
   onChange,
@@ -9,12 +13,16 @@ const CodeEditorWindow = ({
   code,
   theme,
 }) => {
-  const [editorContent, setEditorContent] = useState(code || "");
+
+  useEffect(() => { 
+    handleEditorContentChange(editorContentPersistent);
+  }, []);
 
   const handleEditorChange = (newEditorContent) => {
-    setEditorContent(newEditorContent);
-    handleEditorContentChange(editorContent);
-    onChange("code", editorContent);
+    editorContentPersistent = newEditorContent;
+    // Notify Landing that editor content has changed
+    handleEditorContentChange(editorContentPersistent);
+    //onChange("code", editorContent);
   };
 
   const handleEditorMount = (editor, monaco) => {
@@ -41,9 +49,9 @@ const CodeEditorWindow = ({
         height="85vh"
         width={`100%`}
         language={language || "python"}
-        value={editorContent}
+        value={editorContentPersistent}
         theme={theme}
-        defaultValue="// some comment"
+        defaultValue={editorContentPersistent}
         onChange={handleEditorChange}
         onMount={handleEditorMount}
       />

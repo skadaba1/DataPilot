@@ -8,11 +8,11 @@ import SpreadsheetPage from './pages/SpreadsheetPage.js';
 import SessionsPage from './pages/SessionsPage.js';
 
 function App() {
+  const [datasets, setDatasets] = useState([]);
+  console.log("setting datasets in app.js:", datasets);
 
-  const [dataContent, setDataContent] = useState("");
-
-  const handleFileUploadApp = (newDataContent) => {
-    setDataContent(newDataContent);
+  const handleFileUploadApp = (newDatasetName, newDatasetContent) => {
+    setDatasets([...datasets, [newDatasetName, newDatasetContent]]);
   };
 
   return (
@@ -22,7 +22,7 @@ function App() {
         <Routes>
           <Route
             path='/:id?'
-            element={<Landing dataContent={dataContent} />} />
+            element={<Landing datasets={datasets} setDatasets = {setDatasets} />} />
           <Route
             path='/datasets'
             element={<DatasetsPage onFileUploadNotifyApp={handleFileUploadApp} />} />

@@ -1,4 +1,8 @@
 # Harvest.ai
+
+How to run nodemon server:
+- nodemon server/server.js --watch server/*
+
 TODO
 - Build functionality for database upload
 - Pass databases as strings to query

@@ -48,12 +48,8 @@ import { useParams } from "react-router-dom";
 // console.log(binarySearch(arr, target));
 // `;
 
-const pythonDefault = `/* Harvest AI editor and compiler. Write your code here. */
-print("Hello World");
-`;
-
-export default function Landing({dataContent}) {
-  const [code, setCode] = useState(pythonDefault);
+export default function Landing({datasets, setDatasets}) {
+  //const [code, setCode] = useState(pythonDefault);
   const [customInput, setCustomInput] = useState("");
   const [outputDetails, setOutputDetails] = useState(null);
   const [processing, setProcessing] = useState(null);
@@ -80,7 +76,7 @@ export default function Landing({dataContent}) {
   const onChange = (action, data) => {
     switch (action) {
       case "code": {
-        setCode(data);
+        //setCode(data);
         break;
       }
       default: {
@@ -94,7 +90,7 @@ export default function Landing({dataContent}) {
   const [editorContent, setEditorContent] = useState(""); // State to store the editor content
 
   const handleEditorContentChange = (newEditorContent) => {
-    setEditorContent(newEditorContent); // Update editor content when it changes
+    setEditorContent(newEditorContent); // Update editor content when it changes, notifies copilot.js
   };
 
   const handleCompile = () => {
@@ -102,7 +98,8 @@ export default function Landing({dataContent}) {
     const formData = {
       language_id: language.id,
       // encode source code in base64
-      source_code: btoa(code),
+      //source_code: btoa(code),
+      source_code: btoa(editorContent),
       stdin: btoa(customInput),
     };
     const options = {
@@ -216,7 +213,7 @@ export default function Landing({dataContent}) {
       progress: undefined,
     });
   };
-
+  console.log("landing.js: rendering copilot.js with datasets:", datasets);
   return (
     <>
       <ToastContainer
@@ -237,19 +234,21 @@ export default function Landing({dataContent}) {
 
         <div className="flex flex-col w-full h-full justify-start items-end">
           <CodeEditorWindow
-            code={code}
+            //code={code}
             onChange={onChange}
             language={language?.value}
             theme={theme.value}
             handleEditorContentChange={handleEditorContentChange}
+            editorContent={editorContent}
           />
         </div>
 
         <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
           <Copilot
             editorContent={editorContent}
-            dataContent={dataContent}
-            idFromLanding={id}
+            datasets={datasets}
+            setDatasets = {setDatasets}
+            idFromLanding = {id}
           />
         </div>
       </div>

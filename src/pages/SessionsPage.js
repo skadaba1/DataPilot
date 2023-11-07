@@ -99,7 +99,7 @@ function SessionsPage() {
         navigate({
             pathname: `/${id}`,
           });
-        //window.location.href = `/${id}`;
+        window.location.href = `/${id}`;
     } catch(error) {
         console.error(`There was an error retrieving the log list: ${error}`);
     }

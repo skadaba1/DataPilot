@@ -4,21 +4,24 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import './FileUpload.scss'
 import axios from 'axios'
 
-const FileUpload = ({ files, setFiles, removeFile, onFileUploadNotifyDatasets }) => {
+const FileUpload = ({ files, setFiles, removeFile, onFileUploadNotifyDatasets, dataType }) => {
   const uploadHandler = (event) => {
     const file = event.target.files[0];
-    if (!file) return;
+   
+    if (!file) {
+      return;
+    }
+    
+    files.forEach((existingFile) => {
+      if (file.name == existingFile.name) {
+        return;
+      }
+    });
 
     file.isUploading = true;
 
-    // read file and send contents to datasets page
-    var reader = new FileReader();
-    reader.onload = function(event) {
-      onFileUploadNotifyDatasets(event.target.result);
-    };
-    reader.readAsText(file);
-
-    setFiles([...files, file])
+    // send file to datasets page
+    onFileUploadNotifyDatasets(file)
 
     file.isUploading = false;
 
@@ -46,6 +49,8 @@ const FileUpload = ({ files, setFiles, removeFile, onFileUploadNotifyDatasets })
     //   });
   }
 
+  const uploadText = "Upload " + dataType;
+
   return (
     <>
       <div className="file-card">
@@ -56,7 +61,7 @@ const FileUpload = ({ files, setFiles, removeFile, onFileUploadNotifyDatasets })
             <i>
               <FontAwesomeIcon icon={faPlus} />
             </i>
-            Upload Dataset
+            {uploadText}
           </button>
         </div>
 

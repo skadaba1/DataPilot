@@ -6,17 +6,20 @@ import harvest_logo from './copilot_gray.png'; // Import the image
 import axios from 'axios';
 import { TypeAnimation } from 'react-type-animation';
 
-let currentCodeState = "";
-let currentDataContent = "";
+let allDatasets = [];
 let sendIntroduction = true;
 let task = "";
 let context = "";
 let name = "";
 //et id = null;
-export default function Copilot({ editorContent, dataContent, idFromLanding}) {
+let chatLogPersistent = [];
+export default function Copilot({ editorContent, datasets, setDatasets, idFromLanding }) {
     // editorContent is current user code 
+    // datasets is new datasets which have been uploaded
+
     const [inputValue, setInputValue] = useState("");
-    const [chatLog, setChatLog] = useState([]);
+    const [chatLog, setChatLog] = useState(chatLogPersistent);    
+
     const [isLoading, setIsLoading] = useState(false);
 
     const [logs, setLogs] = useState("")
@@ -26,6 +29,7 @@ export default function Copilot({ editorContent, dataContent, idFromLanding}) {
     const [isLoadingInit, setIsLoadingInit] = useState(true);
     const conversationRef = React.useRef([{ role: "system", content: "" }]);
     const conversationWithContextRef = React.useRef([{ role: "system", content: "" }]);
+    //const conversationRef = React.useRef([{ role: "system", content: "You are Bo, the Harvest AI help assistant. Your job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise. When answering future questions, you do not need to reintroduce yourself." }]);
 
     // Fetch last log
     const fetchOne = async () => {
@@ -35,7 +39,7 @@ export default function Copilot({ editorContent, dataContent, idFromLanding}) {
         name = response.data.name;
 
         const initInstruction =
-            "You are the Harvest AI help assistant. \n " +
+            "You are Bo, the Harvest AI help assistant. Your job is to help me, a data analyst, with my workflow. Please greet me and tell me your role. Please be concise. When answering future questions, you do not need to reintroduce yourself.\n" +
             "Here is some context from a previous " +
             "conversation that may be helpful (it may be empty): " +
             JSON.stringify(response.data.session_content)
@@ -82,12 +86,15 @@ export default function Copilot({ editorContent, dataContent, idFromLanding}) {
     
     // for when the editor content changes
     useEffect(() => {
-        currentCodeState = editorContent;
+        // if (sendIntroduction) {
+        //     sendMessage(conversationRef.current);
+        //     sendIntroduction = false;
+        // }
         // add conditions here based on parsing code content to make suggestions
         if(counter >= 100) {
             setCounter(0);
             //const flag = "add to chat log";
-            const q = evaluateState(currentCodeState, context, task);
+            const q = evaluateState(editorContent, context, task);
             conversationRef.current.push({role: "user", content: q});
             const flag = 0;
             sendMessage(conversationRef.current, flag);
@@ -96,23 +103,26 @@ export default function Copilot({ editorContent, dataContent, idFromLanding}) {
         setCounter(counter + 1);
     }, [editorContent]);
 
-    const buildDatasetQuery = () => {
-        let intro = "Here is a new dataset. When you receive it, please tell me 'I have reviewed your new dataset.' Then, provide me with a summary of the dataset."
+    const buildNewDatasetQuery = (dataset) => {
+        let intro = "Here is a new dataset named " + dataset[0];
+        let prompt = "When you receive it, please tell me 'I reviewed your new dataset', followed by the dataset's name. Then, provide me with a summary of the dataset. Please be concise in your response."
         let newline = "\n";
-        let conciseRequest = "Please be concise in yur response."
-        return intro + newline + currentDataContent + newline + conciseRequest;
+        return intro + newline + dataset[1] + newline + prompt;
     }
 
     // for when new dataset is uploaded
     useEffect(() => {
-        // second check is so that the message is only sent the first time the user comes back to the landing page
-        if (dataContent != "" && dataContent != currentDataContent) {
-            currentDataContent = dataContent;
-            const message = buildDatasetQuery()
-            conversationRef.current.push({role: "user", content: message})
-            sendMessage(conversationRef.current);
-        }
-    }, [dataContent]);
+            let newDatasets = (datasets.length > 0);
+            datasets.forEach ((dataset) => {
+                allDatasets = [...allDatasets, dataset];
+                const message = buildNewDatasetQuery(dataset);
+                conversationRef.current.push({role: "user", content: message});
+                sendMessage(conversationRef.current);
+            });
+            if (newDatasets) {
+                setDatasets([]);
+            }
+    }, [datasets]);
 
     // Fetch all Logs
     const fetchLogs = async () => {
@@ -198,11 +208,17 @@ export default function Copilot({ editorContent, dataContent, idFromLanding}) {
 
     // DOES NOT USE LOGS RIGHT NOW
     const buildQuery = (userQuery) => {
+        let intro = "First, I am going to give you my code. Then, I am going to give you my datasets. Then, I am going to ask you a question."
         let codeIntro = "Here is my current code: ";
         let newline = "\n";
         let conciseRequest = "Please be very concise in your response.";
-        let message =  codeIntro + newline + currentCodeState + 
-                      newline + newline + userQuery + newline + conciseRequest;
+        let datasetsQuery = "Here are my current datasets: ";
+        allDatasets.forEach((dataset) => {
+            datasetsQuery += newline + "This dataset is called " + dataset[0];
+            datasetsQuery += newline + "Its contents are: " + newline + dataset[1];
+        });
+        let message =  intro  + newline + codeIntro + newline + editorContent + 
+                      newline + newline + datasetsQuery + newline + newline + userQuery + newline + conciseRequest;
         return message;
     }
 
@@ -215,7 +231,9 @@ export default function Copilot({ editorContent, dataContent, idFromLanding}) {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        setChatLog((prevChatLog) => [...prevChatLog, { type: "user", message: inputValue }]);
+        const newChat = {type: "user", message: inputValue};
+        setChatLog((prevChatLog) => [...prevChatLog, newChat]);
+        chatLogPersistent = [...chatLogPersistent, newChat];
 
         //const flag = "add to chat log";
         const r = "user";
@@ -260,10 +278,12 @@ export default function Copilot({ editorContent, dataContent, idFromLanding}) {
                     conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
                     const r = "assistant";
                     const q = response.data.choices[0].message.content;
+                    const newChat = {type: "bot", message: response.data.choices[0].message.content};
                     setChatLog((prevChatLog) => [
                         ...prevChatLog,
-                        { type: "bot", message: response.data.choices[0].message.content },
+                        newChat,
                     ]);
+                    chatLogPersistent = [...chatLogPersistent, newChat];
                 }
 
                 setIsLoading(false);
@@ -308,7 +328,7 @@ export default function Copilot({ editorContent, dataContent, idFromLanding}) {
                                     style={{ fontFamily: "'Cerebri Sans', sans-serif", wordWrap: 'break-word' }}
                                 >
                                     <div className={`${message.type === 'user' ? 'lighter-orange' : 'gray'} rounded-lg p-2 max-w-sm`}>
-                                        {message.type === 'user' ? (
+                                        {message.type === 'user' || message.type == 'bot' ? (
                                             message.message
                                         ) : (
                                             <TypeAnimation
@@ -356,7 +376,7 @@ export default function Copilot({ editorContent, dataContent, idFromLanding}) {
                 <form onSubmit={handleSubmit} className="flex-none p-6">
                     <div style={{ position: 'relative' }}>
                         <div className="flex rounded-lg border border-white-700 bg-white-800">
-                            <input type="text" className="flex-grow px-4 py-2 focus:outline-none" style={{ backgroundColor: "white", color: "gray", borderRadius: "8px" }} placeholder="Type your message..." value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
+                            <input type="text" className="flex-grow px-4 py-2 focus:outline-none" style={{ backgroundColor: "white", color: "gray", borderRadius: "8px", paddingRight: "40px"}} placeholder="Type your message..." value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
                             <button
                                 type="submit"
                                 className="absolute right-0 top-0 bottom-0 m-auto rounded-lg px-4 py-2 font-semibold focus:outline-none hover:bg-purple-600 transition-colors duration-300"
