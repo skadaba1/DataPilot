@@ -96,9 +96,9 @@ function SessionsPage() {
         handleLogReset();
         closePopup();
         console.log("ID ABOVE NAVIGATE = " + id);
-        navigate({
+        /*navigate({
             pathname: `/${id}`,
-          });
+          });*/
         window.location.href = `/${id}`;
     } catch(error) {
         console.error(`There was an error retrieving the log list: ${error}`);

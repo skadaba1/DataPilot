@@ -48,7 +48,7 @@ import { useParams } from "react-router-dom";
 // console.log(binarySearch(arr, target));
 // `;
 
-export default function Landing({datasets, setDatasets}) {
+export default function Landing({datasets, setDatasets, onSetId}) {
   //const [code, setCode] = useState(pythonDefault);
   const [customInput, setCustomInput] = useState("");
   const [outputDetails, setOutputDetails] = useState(null);
@@ -60,6 +60,11 @@ export default function Landing({datasets, setDatasets}) {
   const ctrlPress = useKeyPress("Control");
 
   const {id} = useParams();
+  onSetId(id);
+
+  window.addEventListener('beforeunload', (event) => {
+    window.location.href = `/`;
+  });
 
   const onSelectChange = (sl) => {
     console.log("selected Option...", sl);
@@ -246,8 +251,6 @@ export default function Landing({datasets, setDatasets}) {
         <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
           <Copilot
             editorContent={editorContent}
-            datasets={datasets}
-            setDatasets = {setDatasets}
             idFromLanding = {id}
           />
         </div>

@@ -27,6 +27,7 @@ exports.logsCreate = async (req, res) => {
       'session_content': req.body.session_content,
       'name': req.body.name,
       'task': req.body.task,
+      'datasets': req.body.datasets
     })
     .then(() => {
       // Send a success message in response
@@ -107,13 +108,38 @@ exports.logsReset = async (req, res) => {
 exports.updateEntry = async (req, res) => {
   try {
     // Update the entry with the specified ID in the 'Logs' table
+    const id = req.body.id;
+    const session_content = req.body.session_content;
+    const name = req.body.name;
+    const task = req.body.task;
+    const datasets = req.body.datasets
+
+    const currentLog = await knex('Logs')
+      .where('id', id)
+      .first(); // Retrieve the first matching entry
+    // Create an object to hold the fields you want to update
+    const updateFields = {};
+
+    if (session_content !== undefined) {
+      updateFields.session_content = session_content;
+    }
+
+    if (name !== undefined) {
+      updateFields.name = name;
+    }
+
+    if (task !== undefined) {
+      updateFields.task = task;
+    }
+
+    if (datasets !== undefined) {
+      updateFields.datasets = currentLog.datasets + datasets;
+    }
+
+    // Update the entry with the specified ID in the 'Logs' table, but only update the specified fields
     await knex('Logs')
       .where('id', req.body.id)
-      .update({
-        session_content: req.body.session_content,
-        name: req.body.name,
-        task: req.body.task,
-      });
+      .update(updateFields);
 
     // Send a success message in response
     res.json({ message: `Entry with ID ${req.body.id} updated.` });

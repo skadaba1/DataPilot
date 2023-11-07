@@ -11,9 +11,9 @@ let sendIntroduction = true;
 let task = "";
 let context = "";
 let name = "";
-//et id = null;
+let datasets = "";
 let chatLogPersistent = [];
-export default function Copilot({ editorContent, datasets, setDatasets, idFromLanding }) {
+export default function Copilot({ editorContent, idFromLanding }) {
     // editorContent is current user code 
     // datasets is new datasets which have been uploaded
 
@@ -28,34 +28,46 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
 
     const [isLoadingInit, setIsLoadingInit] = useState(true);
     const conversationRef = React.useRef([{ role: "system", content: "" }]);
-    const conversationWithContextRef = React.useRef([{ role: "system", content: "" }]);
-    //const conversationRef = React.useRef([{ role: "system", content: "You are Bo, the Harvest AI help assistant. Your job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise. When answering future questions, you do not need to reintroduce yourself." }]);
+
+    const buildNewDatasetQuery = (datasets) => {
+        let command = "";
+        if(datasets != null && datasets != "") {
+            let intro = "Here is a new dataset";
+            let prompt = "When you receive it provide me with a summary of the dataset. Please be concise in your response."
+            let newline = "\n";
+            command = intro + newline + datasets + newline + prompt;
+        } else {
+            command = "Please summarize my task."
+        }
+        return command
+    }
 
     // Fetch last log
     const fetchOne = async () => {
         try {
         const response = await axios.get(`http://localhost:4001/logs/one?id=${idFromLanding}`);
+        console.log(response);
         task = response.data.task;
         name = response.data.name;
-
-        const initInstruction =
-            "You are Bo, the Harvest AI help assistant. Your job is to help me, a data analyst, with my workflow. Please greet me and tell me your role. Please be concise. When answering future questions, you do not need to reintroduce yourself.\n" +
-            "Here is some context from a previous " +
-            "conversation that may be helpful (it may be empty): " +
-            JSON.stringify(response.data.session_content)
-             + " \n The task I am trying to accomplish this session is: " +
+        datasets = response.data.datasets;
+        let initInstruction = "";
+        if(idFromLanding != null && idFromLanding > 0) {
+        initInstruction =
+             " \n The task I am trying to accomplish this session is: " +
              JSON.stringify(response.data.task) +
-             "\n";
+             "\n" + buildNewDatasetQuery(datasets);
+        } else {
+            initInstruction =
+            "You are Bo, the Harvest AI help assistant. Your job is to help me, a data analyst, with my workflow. Please greet me and tell me your role. Please be concise."
+        }
+        console.log(initInstruction);
         conversationRef.current = [
-            ...conversationRef.current,
             { role: "system", content: initInstruction },
         ];
-
         if (sendIntroduction) {
             sendMessage(conversationRef.current);
             sendIntroduction = false;
         }
-
         } catch (error) {
         console.error(`There was an error retrieving the last log: ${error}`);
         }
@@ -74,27 +86,21 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
     }, []);
    
 
-    const evaluateState = (currentCodeState, context, task) => {
-        const prefix = "1) Given the current code: ";
-        const newline = "\n";
-        const iterim = "2) And the original task intended by me (the user) and the code progress detailed in logs and previous session history: ";
-        const instruct = "3) Please reccomend whether or not I am on the right track to achieve their desired functionality. Please *LIST SPECIFIC LINE NUMBERS* I may consider changing for better results.";
-        const concise = "Please be very concise."
-        let query = prefix + newline + currentCodeState + iterim + context + newline + "My task is to: " + task + newline + instruct + concise;
+    const evaluateState = (currentCodeState) => {
+        const prefix = "1) Here is my current code: " + "\n" + currentCodeState
+        const iterim = "2) My original task was to + " + task + "\n" + ", 3) the datasets I am using are: " + "\n" + datasets + "\n";
+        const instruct = "4) Please check if the code makes sense given the data and suggest any changes that would put me on the right track";
+        const concise = "Please be concise."
+        let query = prefix  + iterim + instruct + concise;
         return query
     }
     
     // for when the editor content changes
     useEffect(() => {
-        // if (sendIntroduction) {
-        //     sendMessage(conversationRef.current);
-        //     sendIntroduction = false;
-        // }
-        // add conditions here based on parsing code content to make suggestions
         if(counter >= 100) {
             setCounter(0);
             //const flag = "add to chat log";
-            const q = evaluateState(editorContent, context, task);
+            const q = evaluateState(editorContent);
             conversationRef.current.push({role: "user", content: q});
             const flag = 0;
             sendMessage(conversationRef.current, flag);
@@ -102,27 +108,6 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
         }
         setCounter(counter + 1);
     }, [editorContent]);
-
-    const buildNewDatasetQuery = (dataset) => {
-        let intro = "Here is a new dataset named " + dataset[0];
-        let prompt = "When you receive it, please tell me 'I reviewed your new dataset', followed by the dataset's name. Then, provide me with a summary of the dataset. Please be concise in your response."
-        let newline = "\n";
-        return intro + newline + dataset[1] + newline + prompt;
-    }
-
-    // for when new dataset is uploaded
-    useEffect(() => {
-            let newDatasets = (datasets.length > 0);
-            datasets.forEach ((dataset) => {
-                allDatasets = [...allDatasets, dataset];
-                const message = buildNewDatasetQuery(dataset);
-                conversationRef.current.push({role: "user", content: message});
-                sendMessage(conversationRef.current);
-            });
-            if (newDatasets) {
-                setDatasets([]);
-            }
-    }, [datasets]);
 
     // Fetch all Logs
     const fetchLogs = async () => {
@@ -149,12 +134,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
             name: name,
         })
         .then(response => {
-            // Update the books state
-            console.log(JSON.stringify(response));
-            /*setName(JSON.stringify(response.data.name))
-            setTask(JSON.stringify(response.data.task))
-            setContext(JSON.stringify(response.session_content))
-            setId(response.id)*/
+            console.log(response);
         })
         .catch(error => console.error(`There was an error updating the logs: ${error}`))
     }
@@ -208,25 +188,15 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
 
     // DOES NOT USE LOGS RIGHT NOW
     const buildQuery = (userQuery) => {
-        let intro = "First, I am going to give you my code. Then, I am going to give you my datasets. Then, I am going to ask you a question."
-        let codeIntro = "Here is my current code: ";
-        let newline = "\n";
-        let conciseRequest = "Please be very concise in your response.";
-        let datasetsQuery = "Here are my current datasets: ";
-        allDatasets.forEach((dataset) => {
-            datasetsQuery += newline + "This dataset is called " + dataset[0];
-            datasetsQuery += newline + "Its contents are: " + newline + dataset[1];
-        });
-        let message =  intro  + newline + codeIntro + newline + editorContent + 
-                      newline + newline + datasetsQuery + newline + newline + userQuery + newline + conciseRequest;
+        let intro = "I am going to ask you about my current dataset or about my code \n"
+        let codeIntro = "Here is my current code if it is relevant: \n BEGIN CODE {" + editorContent + "} END CODE \n";
+        let datasetIntro = "Here is my current datasets if it is relevant: \n BEGIN DATASETS {" + datasets + "} END DATASETS \n";
+        let query = "Here is my question: " + userQuery;
+        let conciseRequest = "\n Please be very concise in your response.";
+        let message = intro + codeIntro + datasetIntro + query + conciseRequest;
         return message;
     }
 
-    const addContext = (query, context) => {
-        let contextSuffix = "Here is some context from my previous sessions that might be helpful: ";
-        let newline = "\n";
-        return query + newline + contextSuffix + newline + context;
-    }
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -234,18 +204,13 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
         const newChat = {type: "user", message: inputValue};
         setChatLog((prevChatLog) => [...prevChatLog, newChat]);
         chatLogPersistent = [...chatLogPersistent, newChat];
-
-        //const flag = "add to chat log";
-        const r = "user";
         const clearLogs = "clearlogs";
         const flag = 0 | (inputValue == clearLogs); //(inputValue == "clearlogs") always supress output
-        const q = buildQuery(inputValue);
-        const qWithContext = addContext(q, context);
-        // maintain memory for without contex tand with context
-        conversationRef.current.push({role: r, content: q});
-        conversationWithContextRef.current = [{role: r, content: qWithContext}];
-
-        sendMessage(conversationWithContextRef.current, flag);
+        const concatenatedString = conversationRef.current.reduce((acc, item) => {
+            return acc + item.role + ': ' + item.content + ', ';
+            }, '');
+        conversationRef.current.push({role: "user", content: buildQuery(inputValue)});
+        sendMessage(conversationRef.current, flag);
 
         // error handling to manually call LogsReset
         if(inputValue == clearLogs) {
@@ -257,6 +222,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
     };
 
     const sendMessage = (message, flag) => {
+        console.log("MESSAGE = " + JSON.stringify(message));
         const url = "https://api.openai.com/v1/chat/completions";
         const apiKey = "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"; // Your OpenAI API key
         const data = {
@@ -292,12 +258,13 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
                 setIsLoading(false);
                 console.log(error);
             });
-        const concatenatedString = conversationRef.current.reduce((acc, item) => {
-            return acc + item.role + ': ' + item.content + ', ';
-            }, '');
-        console.log("Current conversation = " + concatenatedString);
-        handleUpdate(concatenatedString);
+            const concatenatedString = conversationRef.current.reduce((acc, item) => {
+                return acc + item.role + ': ' + item.content + ', ';
+                }, '');
+            console.log("Current conversation = " + concatenatedString);
+            handleUpdate(concatenatedString);
     };
+
 
 
     if(isLoadingInit) {
@@ -328,7 +295,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
                                     style={{ fontFamily: "'Cerebri Sans', sans-serif", wordWrap: 'break-word' }}
                                 >
                                     <div className={`${message.type === 'user' ? 'lighter-orange' : 'gray'} rounded-lg p-2 max-w-sm`}>
-                                        {message.type === 'user' || message.type == 'bot' ? (
+                                        {message.type === 'user' ? (
                                             message.message
                                         ) : (
                                             <TypeAnimation

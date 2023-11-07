@@ -21,3 +21,26 @@ h1 {
   background-color: orange;
   margin-bottom: 50px;
 }
+
+/* Modern Button Style */
+.modern-button {
+    margin-top: 20px;
+    margin-bottom:10px;
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+    background-color: orange; /* Match the color scheme */
+    color: white; /* Text color */
+    border: none;
+    border-radius: 25px; /* Rounded edges */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .modern-button:hover {
+    background-color: darkorange; /* Change color on hover */
+    transform: scale(1.05); /* Add a slight scaling effect on hover */
+  }

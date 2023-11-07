@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -9,11 +9,17 @@ import SessionsPage from './pages/SessionsPage.js';
 
 function App() {
   const [datasets, setDatasets] = useState([]);
+  const [id, setId] = useState(0);
   console.log("setting datasets in app.js:", datasets);
 
   const handleFileUploadApp = (newDatasetName, newDatasetContent) => {
     setDatasets([...datasets, [newDatasetName, newDatasetContent]]);
   };
+
+  const handleSetId = (newId) => {
+    setId(newId);
+    console.log("ID IN APP = " + id);
+  }
 
   return (
     <>
@@ -22,16 +28,16 @@ function App() {
         <Routes>
           <Route
             path='/:id?'
-            element={<Landing datasets={datasets} setDatasets = {setDatasets} />} />
+            element={<Landing datasets={datasets} setDatasets = {setDatasets} onSetId={handleSetId}/>} />
           <Route
             path='/datasets'
-            element={<DatasetsPage onFileUploadNotifyApp={handleFileUploadApp} />} />
+            element={<DatasetsPage onFileUploadNotifyApp={handleFileUploadApp} id={id}/>} />
           <Route
             path='/spreadsheet'
             element={<SpreadsheetPage />} />
           <Route
             path='/sessions'
-            element={<SessionsPage />} />
+            element={<SessionsPage onSetId={handleSetId}/>} />
         </Routes>
       </Router>
     </>

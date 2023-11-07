@@ -32,6 +32,7 @@ knex.schema
           table.string('session_content')
           table.string('name')
           table.string('task')
+          table.string('datasets')
         })
         .then(() => {
           // Log success message
