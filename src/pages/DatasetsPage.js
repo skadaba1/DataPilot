@@ -3,12 +3,15 @@ import './DatabasePage.css';
 import FileUpload from '../components/FileUpload';
 import FileList from '../components/FileList';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 let allFiles = [];
 let documents = "";
 let counter = 0;
 
 function DatasetsPage({onFileUploadNotifyApp, id}) {
+
+  const navigate = useNavigate();
   const [files, setFiles] = useState(allFiles)
 
   const removeFile = (filename) => {
@@ -50,7 +53,9 @@ function DatasetsPage({onFileUploadNotifyApp, id}) {
   }
 
   const handleButtonClick = () => {
-    window.location.href = `/${id}`;
+    navigate({
+      pathname: `/${id}`,
+    });
   };
 
   return (

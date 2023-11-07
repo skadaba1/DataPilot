@@ -13,6 +13,8 @@ let context = "";
 let name = "";
 let datasets = "";
 let chatLogPersistent = [];
+let conversationPersistent = [{role: "system", content: ""}];
+const sessionQuery = "session";
 export default function Copilot({ editorContent, idFromLanding }) {
     // editorContent is current user code 
     // datasets is new datasets which have been uploaded
@@ -28,11 +30,12 @@ export default function Copilot({ editorContent, idFromLanding }) {
 
     const [isLoadingInit, setIsLoadingInit] = useState(true);
     const conversationRef = React.useRef([{ role: "system", content: "" }]);
+    let conversationRefWithContext = React.useRef([{ role: "system", content: "" }]);
 
     const buildNewDatasetQuery = (datasets) => {
         let command = "";
         if(datasets != null && datasets != "") {
-            let intro = "Here is a new dataset";
+            let intro = "I have given you a new dataset";
             let prompt = "When you receive it provide me with a summary of the dataset. Please be concise in your response."
             let newline = "\n";
             command = intro + newline + datasets + newline + prompt;
@@ -74,6 +77,7 @@ export default function Copilot({ editorContent, idFromLanding }) {
     };
 
     useEffect(() => {
+        sendIntroduction = true;
         const fetchData = async () => {
         try {
             await fetchOne();
@@ -116,7 +120,7 @@ export default function Copilot({ editorContent, idFromLanding }) {
         .get('http://localhost:4001/logs/all')
         .then(response => {
             // Update the books state
-            setLogs(JSON.stringify(response.data.session_content))
+            context = JSON.stringify(response.data)
             // Update loading state
             setLoading(false)
         })
@@ -197,6 +201,12 @@ export default function Copilot({ editorContent, idFromLanding }) {
         return message;
     }
 
+    const addContext = (noContextQuery) => {
+        let message = "Here is some contexts from other sessions: BEGIN CONTEXT {" + "\n"  + context + 
+                      "END CONTEXT}\n Please use this info to answer my current query: BEGIN CURRENT QUERY {" + "\n" + noContextQuery + "} END CURRENT QUERY\n";
+        return message;
+    }
+
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -206,11 +216,21 @@ export default function Copilot({ editorContent, idFromLanding }) {
         chatLogPersistent = [...chatLogPersistent, newChat];
         const clearLogs = "clearlogs";
         const flag = 0 | (inputValue == clearLogs); //(inputValue == "clearlogs") always supress output
-        const concatenatedString = conversationRef.current.reduce((acc, item) => {
-            return acc + item.role + ': ' + item.content + ', ';
-            }, '');
-        conversationRef.current.push({role: "user", content: buildQuery(inputValue)});
-        sendMessage(conversationRef.current, flag);
+
+        const pattern = new RegExp(sessionQuery, 'i');
+
+        const noContextQuery = buildQuery(inputValue)
+
+        conversationRefWithContext.current = conversationRef.current;
+        conversationRef.current.push({role: "user", content: noContextQuery});
+        conversationPersistent = conversationRef.current;
+        
+        if(pattern.test(inputValue)) {
+            conversationRefWithContext.current.push({role: "user", content: addContext(noContextQuery)})
+            sendMessage(conversationRefWithContext.current, flag);
+        } else {
+            sendMessage(conversationRef.current, flag);
+        }
 
         // error handling to manually call LogsReset
         if(inputValue == clearLogs) {
@@ -242,6 +262,7 @@ export default function Copilot({ editorContent, idFromLanding }) {
             .then((response) => {
                 if(!flag) {
                     conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
+                    conversationPersistent = conversationRef.current;
                     const r = "assistant";
                     const q = response.data.choices[0].message.content;
                     const newChat = {type: "bot", message: response.data.choices[0].message.content};
@@ -261,8 +282,8 @@ export default function Copilot({ editorContent, idFromLanding }) {
             const concatenatedString = conversationRef.current.reduce((acc, item) => {
                 return acc + item.role + ': ' + item.content + ', ';
                 }, '');
-            console.log("Current conversation = " + concatenatedString);
             handleUpdate(concatenatedString);
+            fetchLogs();
     };
 
 
@@ -295,7 +316,7 @@ export default function Copilot({ editorContent, idFromLanding }) {
                                     style={{ fontFamily: "'Cerebri Sans', sans-serif", wordWrap: 'break-word' }}
                                 >
                                     <div className={`${message.type === 'user' ? 'lighter-orange' : 'gray'} rounded-lg p-2 max-w-sm`}>
-                                        {message.type === 'user' ? (
+                                        {message.type === 'user' || message.type == 'bot' ?  (
                                             message.message
                                         ) : (
                                             <TypeAnimation
