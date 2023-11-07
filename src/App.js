@@ -9,7 +9,6 @@ import SessionsPage from './pages/SessionsPage.js';
 
 function App() {
   const [datasets, setDatasets] = useState([]);
-  console.log("setting datasets in app.js:", datasets);
 
   const handleFileUploadApp = (newDatasetName, newDatasetContent) => {
     setDatasets([...datasets, [newDatasetName, newDatasetContent]]);

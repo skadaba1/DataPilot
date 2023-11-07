@@ -13,6 +13,8 @@ let context = "";
 let name = "";
 //et id = null;
 let chatLogPersistent = [];
+let conversationPersistent = [{role: "system", content: ""}];
+
 export default function Copilot({ editorContent, datasets, setDatasets, idFromLanding }) {
     // editorContent is current user code 
     // datasets is new datasets which have been uploaded
@@ -27,7 +29,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
     const [counter, setCounter] = useState(0);
 
     const [isLoadingInit, setIsLoadingInit] = useState(true);
-    const conversationRef = React.useRef([{ role: "system", content: "" }]);
+    const conversationRef = React.useRef(conversationPersistent);
     const conversationWithContextRef = React.useRef([{ role: "system", content: "" }]);
     //const conversationRef = React.useRef([{ role: "system", content: "You are Bo, the Harvest AI help assistant. Your job is to help me, a data anlayst, with my workflow. Please greet me and tell me your role. Please be concise. When answering future questions, you do not need to reintroduce yourself." }]);
 
@@ -212,12 +214,19 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
         let codeIntro = "Here is my current code: ";
         let newline = "\n";
         let conciseRequest = "Please be very concise in your response.";
+
         let datasetsQuery = "Here are my current datasets: ";
         allDatasets.forEach((dataset) => {
             datasetsQuery += newline + "This dataset is called " + dataset[0];
             datasetsQuery += newline + "Its contents are: " + newline + dataset[1];
         });
-        let message =  intro  + newline + codeIntro + newline + editorContent + 
+
+        let queryCode = editorContent;
+        if (queryCode == "/* Harvest AI editor. Write your code here. */") {
+            queryCode = "";
+        }
+
+        let message =  intro  + newline + codeIntro + newline + queryCode + 
                       newline + newline + userQuery + newline + conciseRequest;
         return message;
     }
@@ -244,6 +253,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
         const qWithContext = addContext(q, context);
         // maintain memory for without contex tand with context
         conversationRef.current.push({role: r, content: q});
+        conversationPersistent = conversationRef.current;
         conversationWithContextRef.current = [{role: r, content: qWithContext}];
 
         sendMessage(conversationRef.current, flag);
@@ -277,6 +287,7 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
             .then((response) => {
                 if(!flag) {
                     conversationRef.current.push({ role: "assistant", content: response.data.choices[0].message.content });
+                    conversationPersistent = conversationRef.current;
                     const r = "assistant";
                     const q = response.data.choices[0].message.content;
                     const newChat = {type: "bot", message: response.data.choices[0].message.content};
@@ -285,7 +296,6 @@ export default function Copilot({ editorContent, datasets, setDatasets, idFromLa
                         newChat,
                     ]);
                     chatLogPersistent = [...chatLogPersistent, newChat];
-                    console.log(newChat);
                 }
 
                 setIsLoading(false);
