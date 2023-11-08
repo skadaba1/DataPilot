@@ -1,0 +1,5 @@
+date | events | Name
+2/11/13 | stock split | AAPL
+2/12/13 | trading holiday | AMZN
+2/14/13 | earnings report | AMZN
+2/14/13 | earnings report | AAPL

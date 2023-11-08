@@ -13,6 +13,7 @@ let context = "";
 let name = "";
 let datasets = "";
 let chatLogPersistent = [];
+let numDatasets = 0;
 let conversationPersistent = [{role: "system", content: ""}];
 const sessionQuery = "session";
 export default function Copilot({ editorContent, idFromLanding }) {
@@ -36,12 +37,13 @@ export default function Copilot({ editorContent, idFromLanding }) {
         let command = "";
         if(datasets != null && datasets != "") {
             let intro = "I have given you a new dataset";
-            let prompt = "When you receive it provide me with a summary of the dataset. Please be concise in your response."
+            let prompt = `When you receive it, provide me with a 1 sentence summary of only dataset ${numDatasets}. Describe any missing data and any basic trends. Please be concise in your response.`
             let newline = "\n";
             command = intro + newline + datasets + newline + prompt;
         } else {
             command = "Please summarize my task."
         }
+        numDatasets += 1;
         return command
     }
 
@@ -246,7 +248,7 @@ export default function Copilot({ editorContent, idFromLanding }) {
         const url = "https://api.openai.com/v1/chat/completions";
         const apiKey = "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"; // Your OpenAI API key
         const data = {
-            model: "gpt-3.5-turbo-0301",
+            model: "gpt-4-1106-preview",
             messages: message // Pass the entire conversation history here
         };
 
